@@ -115,6 +115,26 @@ window.App = {
       console.log(e);
       self.setStatus("Error sending coin; see log.");
     });
+  },
+
+  splitAlice: async function() {
+    var self = this;
+
+      // initialize Splitter contract
+      var splitter = await Splitter.deployed();
+      var aliceAddress = await splitter.alice.call();
+
+      var amount = web3.toWei(parseInt(document.getElementById("amount").value), 'ether');
+
+      this.setStatus(`Initiating transaction to transfer ${amount}... (please wait)`);
+      splitter.sendTransaction({from: aliceAddress, to: splitter.contract.address, value: amount})
+        .then(function() {
+          self.setStatus("Transaction complete!");
+          self.refreshBalance();
+        }).catch(function(e) {
+          console.log(e);
+          self.setStatus("Error sending coin; see log.");
+        });
   }
 };
 

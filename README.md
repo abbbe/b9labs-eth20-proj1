@@ -6,7 +6,7 @@ You will create a smart contract named Splitter whereby:
 * we can see the balance of the Splitter contract on the Web page. [DONE]
 * whenever Alice sends ether to the contract, half of it goes to Bob and the other half to Carol. [DONE]
 * we can see the balances of Alice, Bob and Carol on the Web page. [DONE]
-* Alice can use the Web page to split her ether.
+* Alice can use the Web page to split her ether. [DONE]
 
 Stretch goals:
 
