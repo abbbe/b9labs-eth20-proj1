@@ -45,21 +45,34 @@ window.App = {
       self.refreshBalance();
     });
 
+    // read Splitter/Alice/Bob/Carol's addresses and balances and make them available in DOM
+    function updateBalance(party, err, balance) {
+      var balanceElement = document.getElementById(party + "_balance");
+      if (err != null) {
+        alert(`Error getting balance of ${party} contract: ${err}`);
+        balanceElement.innerHTML = "#ERROR";
+      } else {
+        console.debug(`Balance of ${party}: ${balance.toString()}`);
+        balanceElement.innerHTML = web3.fromWei(balance, 'ether');
+      }
+    }
+
+    function updatePartyBalance(party, address) {
+      console.log(`Address of ${party}: ${address}`);
+      var addressElement = document.getElementById(party + "_address");
+      addressElement.innerHTML = address;
+      web3.eth.getBalance(address, function(err, balance) {
+        updateBalance(party, err, balance)
+     });
+    }
+
     // initialize Splitter contract
     var splitter = await Splitter.deployed();
-    console.debug("Splitter address:", splitter.contract.address);
 
-    // read Splitter balance and make it available in DOM
-    web3.eth.getBalance(splitter.contract.address, function (err, balance) {
-      var splitterBalanceElement = document.getElementById("splitter_balance");
-      if (err != null) {
-        alert("Error getting balance of Splitter contract: " + err);
-        splitterBalanceElement.innerHTML = "#ERROR";
-      } else {
-        console.debug("Splitter balance:", balance.toString());
-        splitterBalanceElement.innerHTML = balance.toString();
-      }
-    });
+    updatePartyBalance('splitter', splitter.contract.address);
+    updatePartyBalance('alice', await splitter.alice.call());
+    updatePartyBalance('bob', await splitter.bob.call());
+    updatePartyBalance('carol', await splitter.carol.call());
   },
 
   setStatus: function(message) {
