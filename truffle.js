@@ -6,6 +6,12 @@ module.exports = {
       network_id: "*"
     },
 
+    burp: {
+      host: "127.0.0.1",
+      port: 4545,
+      network_id: "*"
+    },
+
     geth_rinkeby: {
       host: "127.0.0.1",
       port: 8545,
