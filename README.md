@@ -8,6 +8,10 @@ You will create a smart contract named Splitter whereby:
 * we can see the balances of Alice, Bob and Carol on the Web page. [DONE]
 * Alice can use the Web page to split her ether. [DONE]
 
+TODO:
+* split all Alice's ether automatically
+* refresh balances
+
 Stretch goals:
 
 * add a kill switch to the whole contract.

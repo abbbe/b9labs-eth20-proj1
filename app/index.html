@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MetaCoin - Truffle Webpack Demo w/ Frontend</title>
+  <title>B9Labs ETH20 Project 1</title>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <script src="./app.js"></script>
 </head>
 <body>
-  <h1>MetaCoin</h1>
-  <h2>Example Truffle Dapp</h2>
-  <h3>You have <span class="black"><span id="balance"></span> META</span></h3>
+  <h1>B9Labs ETH20 Project 1</h1>
 
   <table border=1>
   <tr><td>Splitter</td> <td><span id="splitter_address"/> <td><span id="splitter_balance"/></td></tr>
@@ -16,16 +14,12 @@
   <tr><td>Bob</td> <td><span id="bob_address"/> <td><span id="bob_balance"/></td></tr>
   <tr><td>Carol</td> <td><span id="carol_address"/> <td><span id="carol_balance"/></td></tr>
   </table>
-  <br><br><button id="splitAlice" onclick="App.splitAlice()">Split Alice</button>
 
-  <br>
-  <h1>Send MetaCoin</h1>
-  <br><label for="amount">Amount:</label><input type="text" id="amount" placeholder="e.g., 95"></input>
-  <br><label for="receiver">To Address:</label><input type="text" id="receiver" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
-  <br><br><button id="send" onclick="App.sendCoin()">Send MetaCoin</button>
-  <br><br>
-  <span id="status"></span>
-  <br>
-  <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span>
+  <p>
+  <label for="amount">Amount:</label> <input type="text" id="amount" placeholder="e.g., 95"></input>
+  <button id="splitAlice" onclick="App.splitAlice()">Split Alice</button>
+  </p>
+
+  <div id="status"></div>
 </body>
 </html>
