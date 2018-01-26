@@ -6,6 +6,12 @@ module.exports = {
       network_id: "*"
     },
 
+    net24601: {
+      host: "127.0.0.1",
+      port: 6545,
+      network_id: "24601"
+    },
+
     burp: {
       host: "127.0.0.1",
       port: 4545,
