@@ -5,12 +5,11 @@ contract Splitter {
   address public bob;
   address public carol;
 
-  function Splitter(address _alice, address _bob, address _carol) public {
-    require(_alice != address(0));
+  function Splitter(address _bob, address _carol) public {
     require(_bob != address(0));
     require(_carol != address(0));
     
-    alice = _alice;
+    alice = msg.sender;
     bob = _bob;
     carol = _carol;
   }

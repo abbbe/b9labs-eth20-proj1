@@ -32,6 +32,10 @@ contract('Splitter', function (accounts) {
     console.log("Alice:", alice);
     console.log("Bob:", bob);
     console.log("Carol:", carol);
+
+    assert.equal(alice, accounts[1]);
+    assert.equal(bob, accounts[2]);
+    assert.equal(carol, accounts[3]);
   });
 
   it("funds sent by Alice should split between Bob and Carol", async function () {
