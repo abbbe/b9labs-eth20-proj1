@@ -5,7 +5,7 @@ contract Splitter {
   address public bob;
   address public carol;
 
-  mapping (address => uint) public allowances;
+  mapping (address => uint256) public allowances;
 
   modifier onlyAlice() {
     require(msg.sender == alice);
@@ -19,6 +19,8 @@ contract Splitter {
     alice = msg.sender;
     bob = _bob;
     carol = _carol;
+
+    // Initialized(alice, bob, carol);
   }
 
   // interface for Alice and Dave
@@ -27,8 +29,8 @@ contract Splitter {
     require(party2 != address(0));
 
     require(msg.value > 0);
-    uint half1 = msg.value / 2;
-    uint half2 = msg.value - half1;
+    uint256 half1 = msg.value / 2;
+    uint256 half2 = msg.value - half1;
     assert(half1 + half2 == msg.value);
 
     if (half1 > 0) {
@@ -40,15 +42,19 @@ contract Splitter {
     }
   }
   
-  function _authorizeWithdraw(address party, uint amount) private {
+  function _authorizeWithdraw(address party, uint256 amount) private {
+    assert(party != address(0));
+    assert(amount > 0);
     allowances[party] += amount;
+    // WithdrawAuthorized(party, amount);
   }
 
   // interface for Bob, Carol, Emma
   function withdraw() public {
-    uint amount = allowances[msg.sender];
+    uint256 amount = allowances[msg.sender];
     if (amount > 0) {
       allowances[msg.sender] = 0;
+      // Withdraw(msg.sender, amount);
       msg.sender.transfer(amount);
     }
   }
