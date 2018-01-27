@@ -118,9 +118,4 @@ contract('Splitter', function (accounts) {
     var txCost = txReceipt.gasUsed * tx.gasPrice;
     assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
   });
-
-  // got receipt for the transaction
-  //var txCost = txReceipt.gasUsed * tx.gasPrice;
-  //assertBalancesDiffEqual(balancesBefore, [amount, 0, -txCost - amount, 0, 0, 0]);
-
 });
