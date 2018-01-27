@@ -115,19 +115,48 @@ contract('Splitter', function (accounts) {
     }
   });
 
-  it.skip("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
+  // it("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
+  //   var amount = 1000000;
+  //   var halfAmount1 = Math.floor(amount / 2);
+  //   var halfAmount2 = amount - halfAmount1;
+
+  //   // send some amount to Splitter on behalf of Bob
+  //   var balancesBefore = getBalances();
+  //   var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
+  //   var tx = web3.eth.getTransaction(txInfo.tx);
+  //   var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
+
+  //   // got receipt for the transaction
+  //   var txCost = txReceipt.gasUsed * tx.gasPrice;
+  //   assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
+  // });
+
+  it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol", async function () {
+    // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
     var halfAmount2 = amount - halfAmount1;
 
-    // send some amount to Splitter on behalf of Bob
+    // send some amount to Splitter on behalf of Dave
     var balancesBefore = getBalances();
     var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
     var tx = web3.eth.getTransaction(txInfo.tx);
     var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
 
-    // got receipt for the transaction
+    // got receipt for the transaction - make sure funds are with splitter
     var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
+    assertBalancesDiffEqual(balancesBefore, [amount, 0, 0, 0, -txCost - amount, 0]);
+
+    // claim as emma
+    var txEmmaInfo = await splitter.withdraw({ from: emma });
+    var txEmma = await web3.eth.getTransaction(txEmmaInfo.tx);
+    var txCostEmma = txEmmaInfo.receipt.gasUsed * txEmma.gasPrice;
+
+    // claim as carol
+    var txCarolInfo = await splitter.withdraw({ from: carol });
+    var txCarol = await web3.eth.getTransaction(txCarolInfo.tx);
+    var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
+
+    assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2 - txCostCarol, -txCost - amount, halfAmount1 - txCostEmma]);
   });
 });
