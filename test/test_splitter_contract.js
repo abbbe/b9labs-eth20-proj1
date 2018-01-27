@@ -35,7 +35,7 @@ contract('Splitter', function (accounts) {
   it("funds sent by Alice should split between Bob and Carol", async function () {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
-    var halfAmount1 = Math.round(amount / 2);
+    var halfAmount1 = Math.floor(amount / 2);
     var halfAmount2 = amount - halfAmount1;
 
     // send some amount to Splitter on behalf of Alice
