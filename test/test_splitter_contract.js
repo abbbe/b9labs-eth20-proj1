@@ -1,3 +1,5 @@
+var getTransactionReceiptMined = require("./getTransactionReceiptMined.js");
+
 var Splitter = artifacts.require("./Splitter.sol");
 
 contract('Splitter', function (accounts) {
@@ -31,24 +33,6 @@ contract('Splitter', function (accounts) {
     console.log("Bob:", bob);
     console.log("Carol:", carol);
   });
-
-  // watch blocks being mined
-  function getTransactionReceiptMined(txHash) {
-    var blockFilter = web3.eth.filter('latest');
-
-    return new Promise(function (resolve, reject) {
-      blockFilter.watch(async function (error, _) {
-        if (error != null) reject(error);
-
-        // some block was mined
-        var txReceipt = await web3.eth.getTransactionReceipt(txHash);
-        if (txReceipt != null) {
-          blockFilter.stopWatching();
-          resolve(txReceipt);
-        }
-      });
-    });
-  };
 
   it("funds sent by Alice should split between Bob and Carol", async function () {
     // calculate expected amounts to be debited and credited
