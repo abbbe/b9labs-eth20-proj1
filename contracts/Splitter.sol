@@ -31,10 +31,8 @@ contract Splitter {
     party2.transfer(half2);
   }
   
-  function () public payable {
-    if (msg.sender == alice) {
-      // funds sent by Alice split between Bob and Carol
-      split(bob, carol);
-    }
+  function () onlyAlice public payable {
+    // funds sent by Alice split between Bob and Carol
+    split(bob, carol);
   }
 }

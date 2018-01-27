@@ -68,35 +68,10 @@ contract('Splitter', function (accounts) {
     assert(revertFound, `Expected "revert", got ${error} instead`);
   };
 
-  it("transfers from Bob are reverted", function (done) {
+  it("transfers from Bob should fail", function (done) {
     var amount = 1000000;
 
     // send some amount to Splitter on behalf of Bob
-    var balancesBefore = getBalances();
-    var txHash = web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount });
-    var tx = web3.eth.getTransaction(txHash);
-    var txReceipt = await web3.eth.getTransactionReceiptMined(txHash);
-
-    // got receipt for the transaction
-    var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [amount, 0, -txCost - amount, 0, 0, 0]);
-  });
-
-  it("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
-    var amount = 1000000;
-    var halfAmount1 = Math.floor(amount / 2);
-    var halfAmount2 = amount - halfAmount1;
-
-    // send some amount to Splitter on behalf of Bob
-    var balancesBefore = getBalances();
-    var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
-    var tx = web3.eth.getTransaction(txInfo.tx);
-    var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
-
-    // got receipt for the transaction
-    var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
-
     try {
       web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount }, function (error, txHash) {
         if (error) {
@@ -125,7 +100,27 @@ contract('Splitter', function (accounts) {
     } catch (error) {
       _assertRevert('@sendTransaction-catch', error);
       done();
-      return;
     }
   });
+
+  it("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
+    var amount = 1000000;
+    var halfAmount1 = Math.floor(amount / 2);
+    var halfAmount2 = amount - halfAmount1;
+
+    // send some amount to Splitter on behalf of Bob
+    var balancesBefore = getBalances();
+    var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
+    var tx = web3.eth.getTransaction(txInfo.tx);
+    var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
+
+    // got receipt for the transaction
+    var txCost = txReceipt.gasUsed * tx.gasPrice;
+    assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
+  });
+
+  // got receipt for the transaction
+  //var txCost = txReceipt.gasUsed * tx.gasPrice;
+  //assertBalancesDiffEqual(balancesBefore, [amount, 0, -txCost - amount, 0, 0, 0]);
+
 });
