@@ -20,9 +20,9 @@ contract('Splitter', function (accounts) {
 
   // compares balances "before" (array of BigNumbers as returned by getBalances()) with expected ones (simple numbers)
   function assertBalancesDiffEqual(balancesBefore, expectedDiffNumbers) {
-    var balancesDiff = getBalancesDiff(balancesBefore);
-    var balancesDiffNumbers = balancesDiff.map(function (n) { return n.toNumber() });
-    assert.deepEqual(balancesDiffNumbers, expectedDiffNumbers);
+    var actualDiffs = getBalancesDiff(balancesBefore).map(function (n) { return n.toString(10) });
+    var expectedDiffs = expectedDiffNumbers.map(function(n) { return n.toString(); });
+    assert.deepEqual(actualDiffs, expectedDiffs);
   }
 
   before(async function () {
