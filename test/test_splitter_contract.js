@@ -62,13 +62,13 @@ contract('Splitter', function (accounts) {
     assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2, 0, 0]);
   });
 
-  function assertRevert(error) {
-    console.log("msg:", JSON.stringify(error));
+  function _assertRevert(error, tag) {
+    // console.log(`${tag} err:`, JSON.stringify(error));
     const revertFound = error.message.search('revert') >= 0;
     assert(revertFound, `Expected "revert", got ${error} instead`);
   };
 
-  it("payment transactions from non-Alice are reverted", async function () {
+  it("transfers from Bob are reverted", function (done) {
     var amount = 1000000;
 
     // send some amount to Splitter on behalf of Bob
@@ -96,11 +96,35 @@ contract('Splitter', function (accounts) {
     // got receipt for the transaction
     var txCost = txReceipt.gasUsed * tx.gasPrice;
     assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
+
     try {
-      var txHash = web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount });
-      assert.fail('should have thrown before'); // ? when this line executes, the actual error message is not shown in 'truffle test' output
+      web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount }, function (error, txHash) {
+        if (error) {
+          _assertRevert(error, '@sendTransaction-catch');
+          done();
+        } else {
+          // txHash is known
+          //console.log('txHash:', txHash); // DEBUG
+          web3.eth.getTransaction(txHash, function (error, tx) {
+            assert.isNull(error, '@getTransaction-callback');
+            // tx is known
+            //console.log('tx:', JSON.stringify(tx)); // DEBUG
+            web3.eth.getTransactionReceiptMined(txHash).then(
+              (receipt) => {
+                // receipt is known
+                //console.log("receipt:", JSON.stringify(receipt));
+                assert.equal(receipt.status, 0, 'Transaction has not failed');
+                done();
+              }, (error) => {
+                assert.fail('@getTransactionReceiptMined-error');
+              }
+            );
+          });
+        }
+      });
     } catch (error) {
-      assertRevert(error);
+      _assertRevert('@sendTransaction-catch', error);
+      done();
       return;
     }
   });
