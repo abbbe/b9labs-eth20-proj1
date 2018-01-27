@@ -14,15 +14,19 @@ contract Splitter {
     carol = _carol;
   }
   
-  function () public payable {
-    if (msg.sender == alice) {
-      // funds sent by Alice split between Bob and Carol
-    	uint forBob = msg.value / 2;
-    	uint forCarol = msg.value - forBob;
+  modifier onlyAlice() {
+    require(msg.sender == alice);
+    _;
+  }
 
-    	bob.transfer(forBob);
-    	carol.transfer(forCarol);
-    }
-    // transfers from non-Alice leave funds on Splitter's balance
+  function () public onlyAlice payable {
+    require(msg.sender == alice);
+
+    // funds sent by Alice split between Bob and Carol
+    uint forBob = msg.value / 2;
+    uint forCarol = msg.value - forBob;
+
+    bob.transfer(forBob);
+    carol.transfer(forCarol);
   }
 }

@@ -6,6 +6,7 @@ contract('Splitter', function (accounts) {
   const alice = accounts[1];
   const bob = accounts[2];
   const carol = accounts[3];
+  var splitter;
 
   // returns an array containing account balances (as BigNumber, in wei)
   function getBalances() {
@@ -21,7 +22,7 @@ contract('Splitter', function (accounts) {
   // compares balances "before" (array of BigNumbers as returned by getBalances()) with expected ones (simple numbers)
   function assertBalancesDiffEqual(balancesBefore, expectedDiffNumbers) {
     var actualDiffs = getBalancesDiff(balancesBefore).map(function (n) { return n.toString(10) });
-    var expectedDiffs = expectedDiffNumbers.map(function(n) { return n.toString(); });
+    var expectedDiffs = expectedDiffNumbers.map(function (n) { return n.toString(); });
     assert.deepEqual(actualDiffs, expectedDiffs);
   }
 
@@ -55,17 +56,23 @@ contract('Splitter', function (accounts) {
     assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2]);
   });
 
-  it("funds sent by non-Alice should be kept by Splitter", async function () {
+  function assertRevert(error) {
+    console.log("msg:", JSON.stringify(error));
+    const revertFound = error.message.search('revert') >= 0;
+    assert(revertFound, `Expected "revert", got ${error} instead`);
+  };
+
+  it("payment transactions from non-Alice are reverted", async function () {
     var amount = 1000000;
 
     // send some amount to Splitter on behalf of Bob
     var balancesBefore = getBalances();
-    var txHash = web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount });
-    var tx = web3.eth.getTransaction(txHash);
-    var txReceipt = await web3.eth.getTransactionReceiptMined(txHash);
-
-    // got receipt for the transaction
-    var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [amount, 0, -txCost - amount, 0]);
+    try {
+      var txHash = web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount });
+      assert.fail('should have thrown before'); // ? when this line executes, the actual error message is not shown in 'truffle test' output
+    } catch (error) {
+      assertRevert(error);
+      return;
+    }
   });
 });
