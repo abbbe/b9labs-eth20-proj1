@@ -8,6 +8,7 @@ contract('Splitter', function (accounts) {
   const carol = accounts[3];
   const dave = accounts[4];
   const emma = accounts[5];
+  var splitter;
 
   // returns an array containing account balances (as BigNumber, in wei)
   function getBalances() {
@@ -23,7 +24,7 @@ contract('Splitter', function (accounts) {
   // compares balances "before" (array of BigNumbers as returned by getBalances()) with expected ones (simple numbers)
   function assertBalancesDiffEqual(balancesBefore, expectedDiffNumbers) {
     var actualDiffs = getBalancesDiff(balancesBefore).map(function (n) { return n.toString(10) });
-    var expectedDiffs = expectedDiffNumbers.map(function(n) { return n.toString(); });
+    var expectedDiffs = expectedDiffNumbers.map(function (n) { return n.toString(); });
     assert.deepEqual(actualDiffs, expectedDiffs);
   }
 
@@ -61,7 +62,13 @@ contract('Splitter', function (accounts) {
     assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2, 0, 0]);
   });
 
-  it("funds sent by non-Alice should be kept by Splitter", async function () {
+  function assertRevert(error) {
+    console.log("msg:", JSON.stringify(error));
+    const revertFound = error.message.search('revert') >= 0;
+    assert(revertFound, `Expected "revert", got ${error} instead`);
+  };
+
+  it("payment transactions from non-Alice are reverted", async function () {
     var amount = 1000000;
 
     // send some amount to Splitter on behalf of Bob
@@ -89,5 +96,12 @@ contract('Splitter', function (accounts) {
     // got receipt for the transaction
     var txCost = txReceipt.gasUsed * tx.gasPrice;
     assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
+    try {
+      var txHash = web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount });
+      assert.fail('should have thrown before'); // ? when this line executes, the actual error message is not shown in 'truffle test' output
+    } catch (error) {
+      assertRevert(error);
+      return;
+    }
   });
 });

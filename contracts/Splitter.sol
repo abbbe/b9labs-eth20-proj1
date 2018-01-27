@@ -5,6 +5,11 @@ contract Splitter {
   address public bob;
   address public carol;
 
+  modifier onlyAlice() {
+    require(msg.sender == alice);
+    _;
+  }
+
   function Splitter(address _bob, address _carol) public {
     require(_bob != address(0));
     require(_carol != address(0));
@@ -31,6 +36,5 @@ contract Splitter {
       // funds sent by Alice split between Bob and Carol
       split(bob, carol);
     }
-    // transfers from non-Alice leave funds on Splitter's balance
   }
 }
