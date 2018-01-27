@@ -32,33 +32,39 @@ contract('Splitter', function (accounts) {
     console.log("Carol:", carol);
   });
 
+  // watch blocks being mined
+  function getTransactionReceiptMined(txHash) {
+    var blockFilter = web3.eth.filter('latest');
+
+    return new Promise(function (resolve, reject) {
+      blockFilter.watch(async function (error, _) {
+        if (error != null) reject(error);
+
+        // some block was mined
+        var txReceipt = await web3.eth.getTransactionReceipt(txHash);
+        if (txReceipt != null) {
+          blockFilter.stopWatching();
+          resolve(txReceipt);
+        }
+      });
+    });
+  };
+
   it("funds sent by Alice should split between Bob and Carol", async function () {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.round(amount / 2);
     var halfAmount2 = amount - halfAmount1;
-    
+
     // send some amount to Splitter on behalf of Alice
     var balancesBefore = getBalances();
-    var blockFilter = web3.eth.filter('latest');
+    var txHash = web3.eth.sendTransaction({ from: alice, to: splitter.address, value: amount });
+    var tx = web3.eth.getTransaction(txHash);
+    var txReceipt = await getTransactionReceiptMined(txHash);
 
-    var txHash = await web3.eth.sendTransaction({ from: alice, to: splitter.address, value: amount });
-    var tx = await web3.eth.getTransaction(txHash);
-    
-    // watch blocks being mined
-    blockFilter.watch(function(err, res){
-      assert.isNull(err);
-      // a block was mined
-      web3.eth.getTransactionReceipt(txHash, function (err, txReceipt) {
-        assert.isNull(err)
-        if (txReceipt == null) { return; }
-
-        // got receipt for the transaction
-        var txCost = txReceipt.gasUsed * tx.gasPrice;
-        assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2]);
-        blockFilter.stopWatching();
-      });
-    });
+    // got receipt for the transaction
+    var txCost = txReceipt.gasUsed * tx.gasPrice;
+    assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2]);
   });
 
   it.skip("funds sent by non-Alice should be kept by Splitter", async function () {
