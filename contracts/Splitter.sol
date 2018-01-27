@@ -12,6 +12,10 @@ contract Splitter {
     _;
   }
 
+  event Initialized(address alice, address bob, address carol);
+  event WithdrawAuthorized(address party, uint256 amount);
+  event Withdrawn(address party, uint256 amount);
+
   function Splitter(address _bob, address _carol) public {
     require(_bob != address(0));
     require(_carol != address(0));
@@ -20,7 +24,7 @@ contract Splitter {
     bob = _bob;
     carol = _carol;
 
-    // Initialized(alice, bob, carol);
+    Initialized(alice, bob, carol);
   }
 
   // interface for Alice and Dave
@@ -46,7 +50,7 @@ contract Splitter {
     assert(party != address(0));
     assert(amount > 0);
     allowances[party] += amount;
-    // WithdrawAuthorized(party, amount);
+    WithdrawAuthorized(party, amount);
   }
 
   // interface for Bob, Carol, Emma
@@ -54,7 +58,7 @@ contract Splitter {
     uint256 amount = allowances[msg.sender];
     if (amount > 0) {
       allowances[msg.sender] = 0;
-      // Withdraw(msg.sender, amount);
+      Withdrawn(msg.sender, amount);
       msg.sender.transfer(amount);
     }
   }

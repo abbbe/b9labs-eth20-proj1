@@ -131,7 +131,7 @@ contract('Splitter', function (accounts) {
   //   assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
   // });
 
-  it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol", async function () {
+  it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", async function () {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
@@ -140,6 +140,16 @@ contract('Splitter', function (accounts) {
     // send some amount to Splitter on behalf of Dave
     var balancesBefore = getBalances();
     var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
+    
+    assert.equal(txInfo.logs.length, 2);
+    assert.equal(txInfo.logs[0].event, 'WithdrawAuthorized');
+    assert.equal(txInfo.logs[0].args.party, emma);
+    assert.equal(txInfo.logs[0].args.amount, halfAmount1);
+
+    assert.equal(txInfo.logs[1].event, 'WithdrawAuthorized');
+    assert.equal(txInfo.logs[1].args.party, carol);
+    assert.equal(txInfo.logs[1].args.amount, halfAmount2);
+
     var tx = web3.eth.getTransaction(txInfo.tx);
     var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
 
@@ -149,11 +159,19 @@ contract('Splitter', function (accounts) {
 
     // claim as emma
     var txEmmaInfo = await splitter.withdraw({ from: emma });
+    assert.equal(txEmmaInfo.logs.length, 1);
+    assert.equal(txEmmaInfo.logs[0].event, 'Withdrawn');
+    assert.equal(txEmmaInfo.logs[0].args.party, emma);
+    assert.equal(txEmmaInfo.logs[0].args.amount, halfAmount1);    
     var txEmma = await web3.eth.getTransaction(txEmmaInfo.tx);
     var txCostEmma = txEmmaInfo.receipt.gasUsed * txEmma.gasPrice;
 
     // claim as carol
     var txCarolInfo = await splitter.withdraw({ from: carol });
+    assert.equal(txCarolInfo.logs.length, 1);
+    assert.equal(txCarolInfo.logs[0].event, 'Withdrawn');
+    assert.equal(txCarolInfo.logs[0].args.party, carol);
+    assert.equal(txCarolInfo.logs[0].args.amount, halfAmount2);
     var txCarol = await web3.eth.getTransaction(txCarolInfo.tx);
     var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
 
