@@ -1,3 +1,5 @@
+web3.eth.getTransactionReceiptMined = require("./getTransactionReceiptMined.js");
+
 var Splitter = artifacts.require("./Splitter.sol");
 
 contract('Splitter', function (accounts) {
@@ -40,19 +42,26 @@ contract('Splitter', function (accounts) {
 
     // send some amount to Splitter on behalf of Alice
     var balancesBefore = getBalances();
-    var tx = await web3.eth.sendTransaction({ from: alice, to: splitter.address, value: amount });
+    var txHash = web3.eth.sendTransaction({ from: alice, to: splitter.address, value: amount });
+    var tx = web3.eth.getTransaction(txHash);
+    var txReceipt = await web3.eth.getTransactionReceiptMined(txHash);
 
-    var txReceipt = await web3.eth.getTransactionReceipt(tx);
-    assertBalancesDiffEqual(balancesBefore, [0, -txReceipt.gasUsed - amount, halfAmount1, halfAmount2]);
+    // got receipt for the transaction
+    var txCost = txReceipt.gasUsed * tx.gasPrice;
+    assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2]);
   });
 
   it("funds sent by non-Alice should be kept by Splitter", async function () {
     var amount = 1000000;
 
+    // send some amount to Splitter on behalf of Bob
     var balancesBefore = getBalances();
-    var tx = await web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount });
+    var txHash = web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount });
+    var tx = web3.eth.getTransaction(txHash);
+    var txReceipt = await web3.eth.getTransactionReceiptMined(txHash);
 
-    var txReceipt = await web3.eth.getTransactionReceipt(tx);
-    assertBalancesDiffEqual(balancesBefore, [amount, 0, -txReceipt.gasUsed - amount, 0]);
+    // got receipt for the transaction
+    var txCost = txReceipt.gasUsed * tx.gasPrice;
+    assertBalancesDiffEqual(balancesBefore, [amount, 0, -txCost - amount, 0]);
   });
 });
