@@ -6,10 +6,12 @@ contract('Splitter', function (accounts) {
   const alice = accounts[1];
   const bob = accounts[2];
   const carol = accounts[3];
+  const dave = accounts[4];
+  const emma = accounts[5];
 
   // returns an array containing account balances (as BigNumber, in wei)
   function getBalances() {
-    return [splitter.address, alice, bob, carol].map(function (acc) { return web3.eth.getBalance(acc) });
+    return [splitter.address, alice, bob, carol, dave, emma].map(function (acc) { return web3.eth.getBalance(acc) });
   }
 
   // returns an array of BigNumbers, containing differences between current and "before" account balances
@@ -32,13 +34,17 @@ contract('Splitter', function (accounts) {
     console.log("Alice:", alice);
     console.log("Bob:", bob);
     console.log("Carol:", carol);
+    console.log("Dave:", dave);
+    console.log("Emma:", emma);
 
     assert.equal(alice, accounts[1]);
     assert.equal(bob, accounts[2]);
     assert.equal(carol, accounts[3]);
+    assert.equal(dave, accounts[4]);
+    assert.equal(emma, accounts[5]);
   });
 
-  it("funds sent by Alice should split between Bob and Carol", async function () {
+  it("funds sent by Alice to fallback should split between Bob and Carol", async function () {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
@@ -52,7 +58,7 @@ contract('Splitter', function (accounts) {
 
     // got receipt for the transaction
     var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2]);
+    assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2, 0, 0]);
   });
 
   it("funds sent by non-Alice should be kept by Splitter", async function () {
@@ -66,6 +72,22 @@ contract('Splitter', function (accounts) {
 
     // got receipt for the transaction
     var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [amount, 0, -txCost - amount, 0]);
+    assertBalancesDiffEqual(balancesBefore, [amount, 0, -txCost - amount, 0, 0, 0]);
+  });
+
+  it("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
+    var amount = 1000000;
+    var halfAmount1 = Math.floor(amount / 2);
+    var halfAmount2 = amount - halfAmount1;
+
+    // send some amount to Splitter on behalf of Bob
+    var balancesBefore = getBalances();
+    var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
+    var tx = web3.eth.getTransaction(txInfo.tx);
+    var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
+
+    // got receipt for the transaction
+    var txCost = txReceipt.gasUsed * tx.gasPrice;
+    assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
   });
 });
