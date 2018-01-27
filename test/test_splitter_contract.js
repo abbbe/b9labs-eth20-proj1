@@ -45,7 +45,7 @@ contract('Splitter', function (accounts) {
     assert.equal(emma, accounts[5]);
   });
 
-  it("funds sent by Alice to fallback should split between Bob and Carol", async function () {
+  it("funds sent by Alice to fallback should be claimable by Bob and Carol", async function () {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
@@ -57,9 +57,21 @@ contract('Splitter', function (accounts) {
     var tx = web3.eth.getTransaction(txHash);
     var txReceipt = await web3.eth.getTransactionReceiptMined(txHash);
 
-    // got receipt for the transaction
+    // got receipt for the transaction - make sure funds are with splitter
     var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1, halfAmount2, 0, 0]);
+    assertBalancesDiffEqual(balancesBefore, [amount, -txCost - amount, 0, 0, 0, 0]);
+
+    // claim as bob
+    var txBobInfo = await splitter.withdraw({ from: bob });
+    var txBob = await web3.eth.getTransaction(txBobInfo.tx);
+    var txCostBob = txBobInfo.receipt.gasUsed * txBob.gasPrice;
+
+    // claim as carol
+    var txCarolInfo = await splitter.withdraw({ from: carol });
+    var txCarol = await web3.eth.getTransaction(txCarolInfo.tx);
+    var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
+    
+    assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1 - txCostBob, halfAmount2 - txCostCarol, 0, 0]);
   });
 
   function _assertRevert(error, tag) {
@@ -103,7 +115,7 @@ contract('Splitter', function (accounts) {
     }
   });
 
-  it("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
+  it.skip("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
     var halfAmount2 = amount - halfAmount1;
