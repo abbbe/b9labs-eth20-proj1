@@ -141,14 +141,12 @@ contract('Splitter', function (accounts) {
     var balancesBefore = getBalances();
     var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
     
-    assert.equal(txInfo.logs.length, 2);
-    assert.equal(txInfo.logs[0].event, 'WithdrawAuthorized');
-    assert.equal(txInfo.logs[0].args.party, emma);
-    assert.equal(txInfo.logs[0].args.amount, halfAmount1);
-
-    assert.equal(txInfo.logs[1].event, 'WithdrawAuthorized');
-    assert.equal(txInfo.logs[1].args.party, carol);
-    assert.equal(txInfo.logs[1].args.amount, halfAmount2);
+    assert.equal(txInfo.logs.length, 1);
+    assert.equal(txInfo.logs[0].event, 'LogSplit');
+    assert.equal(txInfo.logs[0].args.party0, dave);
+    assert.equal(txInfo.logs[0].args.party1, emma);
+    assert.equal(txInfo.logs[0].args.party2, carol);
+    assert.equal(txInfo.logs[0].args.amount, amount);
 
     var tx = web3.eth.getTransaction(txInfo.tx);
     var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
@@ -160,7 +158,7 @@ contract('Splitter', function (accounts) {
     // claim as emma
     var txEmmaInfo = await splitter.withdraw({ from: emma });
     assert.equal(txEmmaInfo.logs.length, 1);
-    assert.equal(txEmmaInfo.logs[0].event, 'Withdrawn');
+    assert.equal(txEmmaInfo.logs[0].event, 'LogWithdraw');
     assert.equal(txEmmaInfo.logs[0].args.party, emma);
     assert.equal(txEmmaInfo.logs[0].args.amount, halfAmount1);    
     var txEmma = await web3.eth.getTransaction(txEmmaInfo.tx);
@@ -169,7 +167,7 @@ contract('Splitter', function (accounts) {
     // claim as carol
     var txCarolInfo = await splitter.withdraw({ from: carol });
     assert.equal(txCarolInfo.logs.length, 1);
-    assert.equal(txCarolInfo.logs[0].event, 'Withdrawn');
+    assert.equal(txCarolInfo.logs[0].event, 'LogWithdraw');
     assert.equal(txCarolInfo.logs[0].args.party, carol);
     assert.equal(txCarolInfo.logs[0].args.amount, halfAmount2);
     var txCarol = await web3.eth.getTransaction(txCarolInfo.tx);
