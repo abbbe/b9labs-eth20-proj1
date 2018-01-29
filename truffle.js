@@ -1,3 +1,7 @@
+var web3 = require('web3');
+var net = require('net');
+var ipcPath = '/Users/abb/Documents/dvp/net24601/datadir/geth.ipc';
+
 module.exports = {
   networks: {
     development: {
@@ -9,6 +13,13 @@ module.exports = {
     net24601: {
       host: "127.0.0.1",
       port: 8545,
+      network_id: "24601"
+    },
+
+    net24601_ipc: {
+      provider: function () {
+        return new web3.providers.IpcProvider(ipcPath, net);
+      },
       network_id: "24601"
     },
 
