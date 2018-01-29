@@ -16,6 +16,12 @@ module.exports = {
       network_id: "24601"
     },
 
+    net1337: {
+      host: "127.0.0.1",
+      port: 8545,
+      network_id: "1337"
+    },
+
     net24601_ipc: {
       provider: function () {
         return new web3.providers.IpcProvider(ipcPath, net);
