@@ -9,15 +9,16 @@
   <h1>B9Labs ETH20 Project 1</h1>
 
   <table border=1>
-  <tr><td>Splitter</td> <td><span id="splitter_address"/> <td><span id="splitter_balance"/></td></tr>
-  <tr><td>Alice</td> <td><span id="alice_address"/> <td><span id="alice_balance"/></td></tr>
-  <tr><td>Bob</td> <td><span id="bob_address"/> <td><span id="bob_balance"/></td></tr>
-  <tr><td>Carol</td> <td><span id="carol_address"/> <td><span id="carol_balance"/></td></tr>
+  <tr><td>Splitter</td> <td><span id="splitter_address"/> <td><span id="splitter_balance"/></td> <td><span id="splitter_allowance"/></td></tr>
+  <tr><td>Alice</td> <td><span id="alice_address"/> <td><span id="alice_balance"/></td> <td><span id="alice_allowance"/></td></tr>
+  <tr><td>Bob</td> <td><span id="bob_address"/> <td><span id="bob_balance"/></td> <td><span id="bob_allowance"/></td></tr>
+  <tr><td>Carol</td> <td><span id="carol_address"/> <td><span id="carol_balance"/></td> <td><span id="carol_allowance"/></td></tr>
   </table>
 
   <p>
   <label for="amount">Amount:</label> <input type="text" id="amount" placeholder="e.g., 95"></input>
-  <button id="splitAlice" onclick="App.splitAlice()">Split Alice</button>
+  <button id="splitAliceButton" onclick="App.splitAlice()">Split Alice</button>
+  <button id="killButton" onclick="App.killSplitter()">Kill Splitter</button>
   </p>
 
   <div id="status"></div>
