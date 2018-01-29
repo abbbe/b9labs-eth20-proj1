@@ -12,6 +12,10 @@ contract Splitter {
     _;
   }
 
+  function getAllowance(address addr) public view returns(uint256 allowance) {
+    allowance = allowances[addr];
+  }
+
   event LogInit(address alice, address bob, address carol);
   event LogSplit(address party0, address party1, address party2, uint256 amount);
   event LogWithdraw(address party, uint256 amount);
