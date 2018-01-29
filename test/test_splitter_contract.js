@@ -145,48 +145,54 @@ contract('Splitter', function (accounts) {
   //   assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
   // });
 
-  it.skip("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", async function () {
+  it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", function (done) {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
     var halfAmount2 = amount - halfAmount1;
 
     // send some amount to Splitter on behalf of Dave
-    var balancesBefore = getBalances();
-    var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
-
-    assert.equal(txInfo.logs.length, 1);
-    assert.equal(txInfo.logs[0].event, 'LogSplit');
-    assert.equal(txInfo.logs[0].args.party0, dave);
-    assert.equal(txInfo.logs[0].args.party1, emma);
-    assert.equal(txInfo.logs[0].args.party2, carol);
-    assert.equal(txInfo.logs[0].args.amount, amount);
-
-    var tx = web3.eth.getTransaction(txInfo.tx);
-    var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
-
-    // got receipt for the transaction - make sure funds are with splitter
-    var txCost = txReceipt.gasUsed * tx.gasPrice;
-    assertBalancesDiffEqual(balancesBefore, [amount, 0, 0, 0, -txCost - amount, 0]);
-
-    // claim as emma
-    var txEmmaInfo = await splitter.withdraw({ from: emma });
-    assert.equal(txEmmaInfo.logs.length, 1);
-    assert.equal(txEmmaInfo.logs[0].event, 'LogWithdraw');
-    assert.equal(txEmmaInfo.logs[0].args.party, emma);
-    assert.equal(txEmmaInfo.logs[0].args.amount, halfAmount1);
-    var txEmma = await web3.eth.getTransaction(txEmmaInfo.tx);
-    var txCostEmma = txEmmaInfo.receipt.gasUsed * txEmma.gasPrice;
-
-    // claim as carol
-    var txCarolInfo = await splitter.withdraw({ from: carol });
-    assert.equal(txCarolInfo.logs.length, 1);
-    assert.equal(txCarolInfo.logs[0].event, 'LogWithdraw');
-    assert.equal(txCarolInfo.logs[0].args.party, carol);
-    assert.equal(txCarolInfo.logs[0].args.amount, halfAmount2);
-    var txCarol = await web3.eth.getTransaction(txCarolInfo.tx);
-    var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
-
-    assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2 - txCostCarol, -txCost - amount, halfAmount1 - txCostEmma]);
+    var balancesBefore, txDaveInfo, txDaveCost, txEmmaInfo, txEmmaCost, txCarolInfo;
+    getBalances().then(_balancesBefore => {
+      balancesBefore = _balancesBefore;
+      return splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
+    }).then(_txDaveInfo => {
+      txDaveInfo = _txDaveInfo;
+      return web3.eth.getTransactionPromise(txDaveInfo.tx);
+      assert.equal(txDaveInfo.logs.length, 1);
+      assert.equal(txDaveInfo.logs[0].event, 'LogSplit');
+      assert.equal(txDaveInfo.logs[0].args.party0, dave);
+      assert.equal(txDaveInfo.logs[0].args.party1, emma);
+      assert.equal(txDaveInfo.logs[0].args.party2, carol);
+      assert.equal(txDaveInfo.logs[0].args.amount, amount);
+    }).then(txDave => {
+      txDaveCost = txDaveInfo.receipt.gasUsed * txDave.gasPrice;
+      return assertBalancesDiffEqual(balancesBefore, [amount, 0, 0, 0, -txDaveCost - amount, 0]);
+    }).then(() => {
+      // claim as emma
+      return splitter.withdraw({ from: emma })
+    }).then(_txEmmaInfo => {
+      txEmmaInfo = _txEmmaInfo;
+      assert.equal(txEmmaInfo.logs.length, 1);
+      assert.equal(txEmmaInfo.logs[0].event, 'LogWithdraw');
+      assert.equal(txEmmaInfo.logs[0].args.party, emma);
+      assert.equal(txEmmaInfo.logs[0].args.amount, halfAmount1);
+      return web3.eth.getTransactionPromise(txEmmaInfo.tx);
+    }).then(txEmma => {
+      txEmmaCost = txEmmaInfo.receipt.gasUsed * txEmma.gasPrice;
+      // claim as carol
+      return splitter.withdraw({ from: carol });
+    }).then(_txCarolInfo => {
+      txCarolInfo = _txCarolInfo;
+      assert.equal(txCarolInfo.logs.length, 1);
+      assert.equal(txCarolInfo.logs[0].event, 'LogWithdraw');
+      assert.equal(txCarolInfo.logs[0].args.party, carol);
+      assert.equal(txCarolInfo.logs[0].args.amount, halfAmount2);
+      return web3.eth.getTransactionPromise(txCarolInfo.tx);
+    }).then(txCarol => {
+      var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
+      assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2 - txCostCarol, -txDaveCost - amount, halfAmount1 - txEmmaCost]);
+      done();
+    })
   });
 });
