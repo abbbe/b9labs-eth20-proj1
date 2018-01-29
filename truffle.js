@@ -1,6 +1,6 @@
 var web3 = require('web3');
 var net = require('net');
-var ipcPath = '/Users/abb/Documents/dvp/net24601/datadir/geth.ipc';
+var ipcPath = '/Users/abb/data/geth-net24601-ipc/geth.ipc';
 
 module.exports = {
   networks: {

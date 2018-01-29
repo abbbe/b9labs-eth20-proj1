@@ -28,21 +28,17 @@ contract('Splitter', function (accounts) {
     });
   }
 
-  before(async function () {
-    splitter = await Splitter.deployed();
-
-    console.log("Splitter:", splitter.address);
-    console.log("Alice:", alice);
-    console.log("Bob:", bob);
-    console.log("Carol:", carol);
-    console.log("Dave:", dave);
-    console.log("Emma:", emma);
-
-    assert.equal(alice, accounts[1]);
-    assert.equal(bob, accounts[2]);
-    assert.equal(carol, accounts[3]);
-    assert.equal(dave, accounts[4]);
-    assert.equal(emma, accounts[5]);
+  before(function (done) {
+    Splitter.deployed().then(_splitter => {
+      splitter = _splitter;
+      console.log("Splitter:", splitter.address);
+      console.log("Alice:", alice);
+      console.log("Bob:", bob);
+      console.log("Carol:", carol);
+      console.log("Dave:", dave);
+      console.log("Emma:", emma);
+      done();
+    }).catch(done);
   });
 
   it("funds sent by Alice to fallback should be claimable by Bob and Carol", function (done) {
@@ -85,7 +81,7 @@ contract('Splitter', function (accounts) {
       return assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1 - txCostBob, halfAmount2 - txCostCarol, 0, 0]);
     }).then(() => {
       done();
-    });
+    }).catch(done);
   });
 
   function _assertRevert(error, tag) {
@@ -112,38 +108,21 @@ contract('Splitter', function (accounts) {
             //console.log('tx:', JSON.stringify(tx)); // DEBUG
             web3.eth.getTransactionReceiptMined(txHash).then(
               (receipt) => {
-                // receipt is known
-                //console.log("receipt:", JSON.stringify(receipt));
-                assert.equal(receipt.status, 0, 'Transaction has not failed');
+                // receipt is known, make sure transaction has not succeeded
+                //console.log("receipt:", JSON.stringify(receipt)); // DEBUG
+                assert.notEqual(receipt.status, 1, 'Transaction has not failed');
                 done();
               }, (error) => {
-                assert.fail('@getTransactionReceiptMined-error');
+                done(error);
               }
-            );
+            ).catch(done);
           });
         }
       });
     } catch (error) {
-      _assertRevert('@sendTransaction-catch', error);
-      done();
+      done(error);
     }
   });
-
-  // it("funds sent by Dave to split(emma, carol) should be split between Emma and Carol", async function () {
-  //   var amount = 1000000;
-  //   var halfAmount1 = Math.floor(amount / 2);
-  //   var halfAmount2 = amount - halfAmount1;
-
-  //   // send some amount to Splitter on behalf of Bob
-  //   var balancesBefore = getBalances();
-  //   var txInfo = await splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
-  //   var tx = web3.eth.getTransaction(txInfo.tx);
-  //   var txReceipt = await web3.eth.getTransactionReceiptMined(txInfo.tx);
-
-  //   // got receipt for the transaction
-  //   var txCost = txReceipt.gasUsed * tx.gasPrice;
-  //   assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2, -txCost - amount, halfAmount1]);
-  // });
 
   it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", function (done) {
     // calculate expected amounts to be debited and credited
@@ -193,6 +172,6 @@ contract('Splitter', function (accounts) {
       var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
       assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2 - txCostCarol, -txDaveCost - amount, halfAmount1 - txEmmaCost]);
       done();
-    })
+    }).catch(done);
   });
 });
