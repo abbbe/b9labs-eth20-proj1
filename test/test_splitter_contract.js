@@ -134,7 +134,7 @@ contract('Splitter', function (accounts) {
     var balancesBefore, txDaveInfo, txDaveCost, txEmmaInfo, txEmmaCost, txCarolInfo;
     getBalances().then(_balancesBefore => {
       balancesBefore = _balancesBefore;
-      return splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
+      return splitter.split(emma, carol, { from: dave, value: amount });
     }).then(_txDaveInfo => {
       txDaveInfo = _txDaveInfo;
       return web3.eth.getTransactionPromise(txDaveInfo.tx);
@@ -173,5 +173,18 @@ contract('Splitter', function (accounts) {
       assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2 - txCostCarol, -txDaveCost - amount, halfAmount1 - txEmmaCost]);
       done();
     }).catch(done);
+  });
+
+  it("transfers should fail after destruction", function (done) {
+    var amount = 1000000;
+    splitter.kill({ from: alice })
+    .then(txInfo => {
+      assert.equal(txInfo.receipt.status, 1, 'Kill transaction has failed');
+      return splitter.split(bob, carol, { from: alice, value: amount })
+    })
+    .then(txInfo => {
+      assert.equal(txInfo.receipt.status, 0, 'Transaction has not failed after destruction');
+      done();
+    });
   });
 });
