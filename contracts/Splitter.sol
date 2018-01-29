@@ -15,6 +15,7 @@ contract Splitter {
   event LogInit(address alice, address bob, address carol);
   event LogSplit(address party0, address party1, address party2, uint256 amount);
   event LogWithdraw(address party, uint256 amount);
+  event LogKill();
 
   function Splitter(address _bob, address _carol) public {
     require(_bob != address(0));
@@ -67,5 +68,10 @@ contract Splitter {
   function () onlyAlice public payable {
     // funds sent by Alice split between Bob and Carol
     split(bob, carol);
+  }
+
+  function kill() onlyAlice public {
+    LogKill();
+    selfdestruct(alice);
   }
 }

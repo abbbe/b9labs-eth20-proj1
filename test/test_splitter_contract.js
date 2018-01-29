@@ -134,7 +134,7 @@ contract('Splitter', function (accounts) {
     var balancesBefore, txDaveInfo, txDaveCost, txEmmaInfo, txEmmaCost, txCarolInfo;
     getBalances().then(_balancesBefore => {
       balancesBefore = _balancesBefore;
-      return splitter.split(emma, carol, { from: dave, to: splitter.address, value: amount });
+      return splitter.split(emma, carol, { from: dave, value: amount });
     }).then(_txDaveInfo => {
       txDaveInfo = _txDaveInfo;
       return web3.eth.getTransactionPromise(txDaveInfo.tx);
@@ -171,6 +171,26 @@ contract('Splitter', function (accounts) {
     }).then(txCarol => {
       var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
       assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2 - txCostCarol, -txDaveCost - amount, halfAmount1 - txEmmaCost]);
+      done();
+    }).catch(done);
+  });
+
+  it("kill should work", function (done) {
+    // connfirm the contract is not empty to begin with 
+    web3.eth.getCodePromise(splitter.address).then(code => {
+      // console.log("contract code before kill:", code); // DEBUG
+      assert(code != '0x0', 'Live contract code is empty');
+      // kill
+      return splitter.kill({ from: alice })
+    }).then(txInfo => {
+      assert.equal(txInfo.receipt.status, 1, 'Kill transaction has failed');
+      assert.equal(txInfo.logs.length, 1, 'kill() has failed to generate one and only one log entry');
+      assert.equal(txInfo.logs[0].event, 'LogKill');      
+      // check code now
+      return web3.eth.getCodePromise(splitter.address);
+    }).then(code => {
+      // console.log("contract code after kill:", code); // DEBUG
+      assert(code == '0x0', 'Killed contract code is not empty');
       done();
     }).catch(done);
   });
