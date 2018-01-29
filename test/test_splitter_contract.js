@@ -175,16 +175,23 @@ contract('Splitter', function (accounts) {
     }).catch(done);
   });
 
-  it("transfers should fail after destruction", function (done) {
-    var amount = 1000000;
-    splitter.kill({ from: alice })
-    .then(txInfo => {
+  it("kill should work", function (done) {
+    // connfirm the contract is not empty to begin with 
+    web3.eth.getCodePromise(splitter.address).then(code => {
+      // console.log("contract code before kill:", code); // DEBUG
+      assert(code != '0x0', 'Live contract code is empty');
+      // kill
+      return splitter.kill({ from: alice })
+    }).then(txInfo => {
       assert.equal(txInfo.receipt.status, 1, 'Kill transaction has failed');
-      return splitter.split(bob, carol, { from: alice, value: amount })
-    })
-    .then(txInfo => {
-      assert.equal(txInfo.receipt.status, 0, 'Transaction has not failed after destruction');
+      assert.equal(txInfo.logs.length, 1, 'kill() has failed to generate one and only one log entry');
+      assert.equal(txInfo.logs[0].event, 'LogKill');      
+      // check code now
+      return web3.eth.getCodePromise(splitter.address);
+    }).then(code => {
+      // console.log("contract code after kill:", code); // DEBUG
+      assert(code == '0x0', 'Killed contract code is not empty');
       done();
-    });
+    }).catch(done);
   });
 });
