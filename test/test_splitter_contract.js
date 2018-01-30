@@ -41,7 +41,7 @@ contract('Splitter', function (accounts) {
     }).catch(done);
   });
 
-  it("funds sent by Alice to fallback should be claimable by Bob and Carol", function (done) {
+  it("funds sent by Alice to fallback should be claimable by Bob and Carol", function () {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
@@ -50,7 +50,7 @@ contract('Splitter', function (accounts) {
     // send some amount to Splitter on behalf of Alice
     var balancesBefore, txHash, tx, txCost;
     var txBobInfo, txCostBob, txCarolInfo;
-    getBalances().then(_balancesBefore => {
+    return getBalances().then(_balancesBefore => {
       balancesBefore = _balancesBefore;
       return splitter.split.sendTransaction(bob, carol, { from: alice, to: splitter.address, value: amount });
     }).then(_txHash => {
@@ -79,9 +79,7 @@ contract('Splitter', function (accounts) {
     }).then(txCarol => {
       var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
       return assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1 - txCostBob, halfAmount2 - txCostCarol, 0, 0]);
-    }).then(() => {
-      done();
-    }).catch(done);
+    });
   });
 
   function _assertRevert(error, tag) {
@@ -107,7 +105,7 @@ contract('Splitter', function (accounts) {
       });
   });
 
-  it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", function (done) {
+  it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", function () {
     // calculate expected amounts to be debited and credited
     var amount = 1000000;
     var halfAmount1 = Math.floor(amount / 2);
@@ -115,7 +113,7 @@ contract('Splitter', function (accounts) {
 
     // send some amount to Splitter on behalf of Dave
     var balancesBefore, txDaveInfo, txDaveCost, txEmmaInfo, txEmmaCost, txCarolInfo;
-    getBalances().then(_balancesBefore => {
+    return getBalances().then(_balancesBefore => {
       balancesBefore = _balancesBefore;
       return splitter.split(emma, carol, { from: dave, value: amount });
     }).then(_txDaveInfo => {
@@ -154,13 +152,12 @@ contract('Splitter', function (accounts) {
     }).then(txCarol => {
       var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
       assertBalancesDiffEqual(balancesBefore, [0, 0, 0, halfAmount2 - txCostCarol, -txDaveCost - amount, halfAmount1 - txEmmaCost]);
-      done();
-    }).catch(done);
+    });
   });
 
-  it("kill should work", function (done) {
-    // connfirm the contract is not empty to begin with 
-    web3.eth.getCodePromise(splitter.address).then(code => {
+  it("kill should work", function () {
+    // confirm the contract is not empty to begin with 
+    return web3.eth.getCodePromise(splitter.address).then(code => {
       // console.log("contract code before kill:", code); // DEBUG
       assert.notEqual(parseInt(code + "0"), 0, 'Live contract code is empty');
       // kill
@@ -174,7 +171,6 @@ contract('Splitter', function (accounts) {
     }).then(code => {
       // console.log("contract code after kill:", code); // DEBUG
       assert.equal(parseInt(code + "0"), 0, 'Killed contract code is not empty');
-      done();
-    }).catch(done);
+    });
   });
 });
