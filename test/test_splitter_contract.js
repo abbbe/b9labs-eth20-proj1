@@ -2,6 +2,7 @@ Promise = require("bluebird");
 Promise.promisifyAll(web3.eth, { suffix: "Promise" });
 
 web3.eth.getTransactionReceiptMined = require("./helpers/getTransactionReceiptMined.js");
+const expectedExceptionPromise = require("./helpers/expectedExceptionPromise.js");
 
 const TEST_AMOUNT = 1000000;
 
@@ -111,6 +112,12 @@ contract('Splitter', function (accounts) {
         _assertRevert(error, '@sendTransaction-catch');
         done();
       });
+  });
+
+  it("should not be able to split 1 Wei", function () {
+    return expectedExceptionPromise(function () {
+      return splitter.split(bob, carol, { from: alice, value: 1, gas: 3000000 })
+    }, 3000000);
   });
 
   it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", function () {
