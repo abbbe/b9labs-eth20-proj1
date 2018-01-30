@@ -106,6 +106,18 @@ window.App = {
     });
   },
 
+  withdraw: async function (accountIndex) {
+    var self = this;
+
+    var acc = web3.eth.accounts[accountIndex];
+    self.setStatus(`Sending withdraw(${acc}) ...`);
+    splitter.withdraw({ from: acc }).then(res => {
+      self.setStatus(`withdraw(${acc}) mined`);
+    }).catch(err => {
+      self.setStatus(`withdraw(${acc}) failed: ${err}`);
+    });
+  },
+
   split: async function () {
     var self = this;
 
