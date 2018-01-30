@@ -137,13 +137,13 @@ contract('Splitter', function (accounts) {
       return splitter.split(emma, carol, { from: dave, value: amount });
     }).then(_txDaveInfo => {
       txDaveInfo = _txDaveInfo;
-      return web3.eth.getTransactionPromise(txDaveInfo.tx);
       assert.equal(txDaveInfo.logs.length, 1);
       assert.equal(txDaveInfo.logs[0].event, 'LogSplit');
       assert.equal(txDaveInfo.logs[0].args.party0, dave);
       assert.equal(txDaveInfo.logs[0].args.party1, emma);
       assert.equal(txDaveInfo.logs[0].args.party2, carol);
       assert.equal(txDaveInfo.logs[0].args.amount, amount);
+      return web3.eth.getTransactionPromise(txDaveInfo.tx);
     }).then(txDave => {
       txDaveCost = txDaveInfo.receipt.gasUsed * txDave.gasPrice;
       return assertBalancesDiffEqual(balancesBefore, [amount, 0, 0, 0, -txDaveCost - amount, 0]);
