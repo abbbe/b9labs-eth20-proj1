@@ -29,7 +29,7 @@ contract Splitter {
     require(party1 != address(0));
     require(party2 != address(0));
 
-    require(msg.value > 0);
+    require(msg.value > 1);
     uint256 half1 = msg.value / 2;
     uint256 half2 = msg.value - half1;
     assert(half1 + half2 == msg.value);
