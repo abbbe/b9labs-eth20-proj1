@@ -179,7 +179,7 @@ contract('Splitter', function (accounts) {
     // connfirm the contract is not empty to begin with 
     web3.eth.getCodePromise(splitter.address).then(code => {
       // console.log("contract code before kill:", code); // DEBUG
-      assert(code != '0x0', 'Live contract code is empty');
+      assert.notEqual(parseInt(code + "0"), 0, 'Live contract code is empty');
       // kill
       return splitter.kill({ from: alice })
     }).then(txInfo => {
@@ -190,7 +190,7 @@ contract('Splitter', function (accounts) {
       return web3.eth.getCodePromise(splitter.address);
     }).then(code => {
       // console.log("contract code after kill:", code); // DEBUG
-      assert(code == '0x0', 'Killed contract code is not empty');
+      assert.equal(parseInt(code + "0"), 0, 'Killed contract code is not empty');
       done();
     }).catch(done);
   });
