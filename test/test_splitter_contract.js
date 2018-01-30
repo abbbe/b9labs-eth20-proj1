@@ -1,7 +1,7 @@
 Promise = require("bluebird");
 Promise.promisifyAll(web3.eth, { suffix: "Promise" });
 
-web3.eth.getTransactionReceiptMined = require("./getTransactionReceiptMined.js");
+web3.eth.getTransactionReceiptMined = require("./helpers/getTransactionReceiptMined.js");
 
 const TEST_AMOUNT = 1000000;
 
