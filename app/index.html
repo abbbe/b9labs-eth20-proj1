@@ -6,20 +6,39 @@
   <script src="./app.js"></script>
 </head>
 <body>
-  <h1>B9Labs ETH20 Project 1</h1>
+  <h1>B9Labs ETH20 Project 1: Splitter</h1>
+  
+  <hr/>
+
+  <div>Contract: <span id="splitter_address"/></div>
+  <div>Owner: <span id="owner_address"/></div>
+
+  <hr/>
 
   <table border=1>
-  <tr><td>Splitter</td> <td><span id="splitter_address"/> <td><span id="splitter_balance"/></td> <td><span id="splitter_allowance"/></td></tr>
-  <tr><td>Alice</td> <td><span id="alice_address"/> <td><span id="alice_balance"/></td> <td><span id="alice_allowance"/></td></tr>
+  <tr><td>Alice</td> <td><span type=text id="alice_address"/> <td><span id="alice_balance"/></td> <td><span id="alice_allowance"/></td></tr>
   <tr><td>Bob</td> <td><span id="bob_address"/> <td><span id="bob_balance"/></td> <td><span id="bob_allowance"/></td></tr>
   <tr><td>Carol</td> <td><span id="carol_address"/> <td><span id="carol_balance"/></td> <td><span id="carol_allowance"/></td></tr>
+  <tr><td>Dave</td> <td><span id="dave_address"/> <td><span id="dave_balance"/></td> <td><span id="dave_allowance"/></td></tr>
+  <tr><td>Emma</td> <td><span id="emma_address"/> <td><span id="emma_balance"/></td> <td><span id="emma_allowance"/></td></tr>
   </table>
 
-  <p>
+  <hr/>
+
+  <table border=1>
+    <tr><td>Party0</td> <td><input type=text id="party0_address"/></tr>
+    <tr><td>Party1</td> <td><input type=text id="party1_address"/></tr>
+    <tr><td>Party2</td> <td><input type=text id="party2_address"/></tr>
+  </table>
+  
   <label for="amount">Amount:</label> <input type="text" id="amount" placeholder="e.g., 95"></input>
-  <button id="splitAliceButton" onclick="App.splitAlice()">Split Alice</button>
-  <button id="killButton" onclick="App.killSplitter()">Kill Splitter</button>
-  </p>
+  <button id="splitButton" onclick="App.split()">Split</button>
+  
+  <hr/>
+
+  <button id="killButton" onclick="App.kill()">Kill</button>
+
+  <hr/>
 
   <div id="status"></div>
 </body>

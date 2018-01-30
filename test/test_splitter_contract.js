@@ -52,7 +52,7 @@ contract('Splitter', function (accounts) {
     var txBobInfo, txCostBob, txCarolInfo;
     getBalances().then(_balancesBefore => {
       balancesBefore = _balancesBefore;
-      return web3.eth.sendTransactionPromise({ from: alice, to: splitter.address, value: amount });
+      return splitter.split.sendTransaction(bob, carol, { from: alice, to: splitter.address, value: amount });
     }).then(_txHash => {
       txHash = _txHash;
       return web3.eth.getTransactionPromise(txHash);
@@ -90,11 +90,11 @@ contract('Splitter', function (accounts) {
     assert(revertFound, `Expected "revert", got ${error} instead`);
   };
 
-  it("transfers from Bob should fail", function (done) {
+  it("transfers to fallback should fail, even from Alice", function (done) {
     var amount = 1000000;
 
-    // send some amount to Splitter on behalf of Bob
-    web3.eth.sendTransactionPromise({ from: bob, to: splitter.address, value: amount })
+    // send some amount to Splitter on behalf of Alice
+    web3.eth.sendTransactionPromise({ from: alice, to: splitter.address, value: amount })
       .then(txHash => {
         return web3.eth.getTransactionReceiptMined(txHash);
       }).then(receipt => {

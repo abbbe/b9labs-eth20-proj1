@@ -2,8 +2,6 @@ pragma solidity 0.4.18;
 
 contract Splitter {
   address public alice;
-  address public bob;
-  address public carol;
 
   mapping (address => uint256) public allowances;
 
@@ -16,20 +14,14 @@ contract Splitter {
     allowance = allowances[addr];
   }
 
-  event LogInit(address alice, address bob, address carol);
+  event LogInit(address alice);
   event LogSplit(address party0, address party1, address party2, uint256 amount);
   event LogWithdraw(address party, uint256 amount);
   event LogKill();
 
-  function Splitter(address _bob, address _carol) public {
-    require(_bob != address(0));
-    require(_carol != address(0));
-    
+  function Splitter() public {
     alice = msg.sender;
-    bob = _bob;
-    carol = _carol;
-
-    LogInit(msg.sender, _bob, _carol);
+    LogInit(msg.sender);
   }
 
   // interface for Alice and Dave
@@ -61,11 +53,6 @@ contract Splitter {
     allowances[msg.sender] = 0;
     LogWithdraw(msg.sender, amount);
     msg.sender.transfer(amount);
-  }
-
-  function () onlyAlice public payable {
-    // funds sent by Alice split between Bob and Carol
-    split(bob, carol);
   }
 
   function kill() onlyAlice public {
