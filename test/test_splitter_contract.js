@@ -94,34 +94,17 @@ contract('Splitter', function (accounts) {
     var amount = 1000000;
 
     // send some amount to Splitter on behalf of Bob
-    try {
-      web3.eth.sendTransaction({ from: bob, to: splitter.address, value: amount }, function (error, txHash) {
-        if (error) {
-          _assertRevert(error, '@sendTransaction-catch');
-          done();
-        } else {
-          // txHash is known
-          //console.log('txHash:', txHash); // DEBUG
-          web3.eth.getTransaction(txHash, function (error, tx) {
-            assert.isNull(error, '@getTransaction-callback');
-            // tx is known
-            //console.log('tx:', JSON.stringify(tx)); // DEBUG
-            web3.eth.getTransactionReceiptMined(txHash).then(
-              (receipt) => {
-                // receipt is known, make sure transaction has not succeeded
-                //console.log("receipt:", JSON.stringify(receipt)); // DEBUG
-                assert.notEqual(receipt.status, 1, 'Transaction has not failed');
-                done();
-              }, (error) => {
-                done(error);
-              }
-            ).catch(done);
-          });
-        }
+    web3.eth.sendTransactionPromise({ from: bob, to: splitter.address, value: amount })
+      .then(txHash => {
+        return web3.eth.getTransactionReceiptMined(txHash);
+      }).then(receipt => {
+        // receipt is known, make sure transaction has not succeeded
+        assert.notEqual(receipt.status, 1, 'Transaction has not failed');
+        done();
+      }).catch(error => {
+        _assertRevert(error, '@sendTransaction-catch');
+        done();
       });
-    } catch (error) {
-      done(error);
-    }
   });
 
   it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", function (done) {
@@ -137,13 +120,13 @@ contract('Splitter', function (accounts) {
       return splitter.split(emma, carol, { from: dave, value: amount });
     }).then(_txDaveInfo => {
       txDaveInfo = _txDaveInfo;
-      return web3.eth.getTransactionPromise(txDaveInfo.tx);
       assert.equal(txDaveInfo.logs.length, 1);
       assert.equal(txDaveInfo.logs[0].event, 'LogSplit');
       assert.equal(txDaveInfo.logs[0].args.party0, dave);
       assert.equal(txDaveInfo.logs[0].args.party1, emma);
       assert.equal(txDaveInfo.logs[0].args.party2, carol);
       assert.equal(txDaveInfo.logs[0].args.amount, amount);
+      return web3.eth.getTransactionPromise(txDaveInfo.tx);
     }).then(txDave => {
       txDaveCost = txDaveInfo.receipt.gasUsed * txDave.gasPrice;
       return assertBalancesDiffEqual(balancesBefore, [amount, 0, 0, 0, -txDaveCost - amount, 0]);
@@ -179,18 +162,18 @@ contract('Splitter', function (accounts) {
     // connfirm the contract is not empty to begin with 
     web3.eth.getCodePromise(splitter.address).then(code => {
       // console.log("contract code before kill:", code); // DEBUG
-      assert(code != '0x0', 'Live contract code is empty');
+      assert.notEqual(parseInt(code + "0"), 0, 'Live contract code is empty');
       // kill
       return splitter.kill({ from: alice })
     }).then(txInfo => {
       assert.equal(txInfo.receipt.status, 1, 'Kill transaction has failed');
       assert.equal(txInfo.logs.length, 1, 'kill() has failed to generate one and only one log entry');
-      assert.equal(txInfo.logs[0].event, 'LogKill');      
+      assert.equal(txInfo.logs[0].event, 'LogKill');
       // check code now
       return web3.eth.getCodePromise(splitter.address);
     }).then(code => {
       // console.log("contract code after kill:", code); // DEBUG
-      assert(code == '0x0', 'Killed contract code is not empty');
+      assert.equal(parseInt(code + "0"), 0, 'Killed contract code is not empty');
       done();
     }).catch(done);
   });
