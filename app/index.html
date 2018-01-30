@@ -16,23 +16,23 @@
   <hr/>
 
   <table border=1>
-    <tg><td>Party</td> <td>Address</td> <td>Balance</td> <td>Allowance</td> <td></td> </tr>
-    <tr><td>Alice</td> <td><span type=text id="alice_address"/> <td><span id="alice_balance"/></td> <td><span id="alice_allowance"/></td> <td><button onclick="App.withdraw(1)">Withdraw</button></td> </tr>
-    <tr><td>Bob</td> <td><span id="bob_address"/> <td><span id="bob_balance"/></td> <td><span id="bob_allowance"/></td> <td><button onclick="App.withdraw(2)">Withdraw</button></td></tr>
-    <tr><td>Carol</td> <td><span id="carol_address"/> <td><span id="carol_balance"/></td> <td><span id="carol_allowance"/></td> <td><button onclick="App.withdraw(3)">Withdraw</button></td></tr>
-    <tr><td>Dave</td> <td><span id="dave_address"/> <td><span id="dave_balance"/></td> <td><span id="dave_allowance"/></td> <td><button onclick="App.withdraw(4)">Withdraw</button></td></tr>
-    <tr><td>Emma</td> <td><span id="emma_address"/> <td><span id="emma_balance"/></td> <td><span id="emma_allowance"/></td> <td><button onclick="App.withdraw(5)">Withdraw</button></td></tr>
+    <tr><th>Party</th> <th>Address</th> <th>Balance</th> <th>Allowance</th> <th></th> </tr>
+    <tr><td>0</td> <td><span id="party0_address"/> <td><span id="party0_balance"/></td> <td><span id="party0_allowance"/></td> <td><button onclick="App.withdraw(0)">Withdraw</button></td></tr>
+    <tr><td>1</td> <td><span id="party1_address"/> <td><span id="party1_balance"/></td> <td><span id="party1_allowance"/></td> <td><button onclick="App.withdraw(1)">Withdraw</button></td></tr>
+    <tr><td>2</td> <td><span id="party2_address"/> <td><span id="party2_balance"/></td> <td><span id="party2_allowance"/></td> <td><button onclick="App.withdraw(2)">Withdraw</button></td></tr>
+    <tr><td>3</td> <td><span id="party3_address"/> <td><span id="party3_balance"/></td> <td><span id="party3_allowance"/></td> <td><button onclick="App.withdraw(3)">Withdraw</button></td></tr>
+    <tr><td>4</td> <td><span id="party4_address"/> <td><span id="party4_balance"/></td> <td><span id="party4_allowance"/></td> <td><button onclick="App.withdraw(4)">Withdraw</button></td></tr>
   </table>
 
   <hr/>
 
   <table border=1>
-    <tr><td>Party0</td> <td><input type=text id="party0_address"/></tr>
-    <tr><td>Party1</td> <td><input type=text id="party1_address"/></tr>
-    <tr><td>Party2</td> <td><input type=text id="party2_address"/></tr>
+    <tr><td>Party0</td> <td><input type=text id="split_party0_address"/></tr>
+    <tr><td>Party1</td> <td><input type=text id="split_party1_address"/></tr>
+    <tr><td>Party2</td> <td><input type=text id="split_party2_address"/></tr>
   </table>
   
-  <label for="amount">Amount:</label> <input type="text" id="amount" placeholder="e.g., 95"></input>
+  <label for="amount">Amount:</label> <input type="text" id="split_amount" placeholder="e.g., 95"></input>
   <button id="splitButton" onclick="App.split()">Split</button>
   
   <hr/>
