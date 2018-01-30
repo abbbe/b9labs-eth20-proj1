@@ -10,128 +10,124 @@ import splitter_artifacts from '../../build/contracts/Splitter.json'
 
 // MetaCoin is our usable abstraction, which we'll use through the code below.
 var Splitter = contract(splitter_artifacts);
-var splitter, alice, bob, carol;
+var splitter, owner;
 
 window.App = {
   start: async function () {
-    var self = this;
-
     // Bootstrap the Splitter abstraction for Use.
     Splitter.setProvider(web3.currentProvider);
-    splitter = await Splitter.deployed();
 
-    // read Splitter/Alice/Bob/Carol's addresses, balances, and allowances and make them available in DOM
-    function _showBalance(party, err, balance) {
-      var balanceElement = document.getElementById(party + "_balance");
-      if (err != null) {
-        alert(`Error getting balance of ${party} contract: ${err}`);
-        balanceElement.innerHTML = "#ERROR";
-      } else {
-        console.debug(`Balance of ${party}: ${balance.toString()}`);
-        balanceElement.innerHTML = web3.fromWei(balance, 'ether');
-      }
-    }
+    Splitter.deployed().then(instance => {
+      splitter = instance;
+      document.getElementById("splitter_address").innerHTML = splitter.contract.address;
+      return splitter.alice();
+    }).then(_owner => {
+      owner = _owner;
+      document.getElementById("owner_address").innerHTML = owner;
 
-    function _showAllowance(party, allowance) {
-      var allowanceElement = document.getElementById(party + "_allowance");
-      console.debug(`Allowance of ${party}: ${'0xcafdc475816febe82d65ba184ae43e9e19cbcff8'.toString(10)}`);
-      allowanceElement.innerHTML = web3.fromWei(allowance, 'ether');
-    }
+      refreshPartiesBalances();
+      watchLogs();
+    });
+
+    // -------------- -------------- -------------- -------------- --------------
 
     function _showPartyBalance(party, address) {
-      if (!address) return;
-
-      console.log(`Address of ${party}: ${address}`);
       var addressElement = document.getElementById(party + "_address");
       addressElement.innerHTML = address;
-      
+
       web3.eth.getBalance(address, function (err, balance) {
-        _showBalance(party, err, balance);
+        var balanceElement = document.getElementById(party + "_balance");
+        if (err != null) {
+          console.error(`Error getting balance of ${party}@${address}: ${err}`);
+          balanceElement.innerHTML = "#ERROR";
+        } else {
+          balanceElement.innerHTML = web3.fromWei(balance, 'ether');
+        }
       });
 
       splitter.getAllowance(address).then(allowance => {
-        _showAllowance(party, allowance);
+        var allowanceElement = document.getElementById(party + "_allowance");
+        allowanceElement.innerHTML = web3.fromWei(allowance, 'ether');
       });
     }
 
     function refreshPartiesBalances() {
-      _showPartyBalance('splitter', splitter.contract.address);
-      _showPartyBalance('alice', alice);
-      _showPartyBalance('bob', bob);
-      _showPartyBalance('carol', carol);
+      _showPartyBalance('alice', web3.eth.accounts[1]);
+      _showPartyBalance('bob', web3.eth.accounts[2]);
+      _showPartyBalance('carol', web3.eth.accounts[3]);
+      _showPartyBalance('dave', web3.eth.accounts[4]);
+      _showPartyBalance('emma', web3.eth.accounts[5]);
     }
 
-    var logInitFilter = splitter.LogInit({}, { fromBlock: 0 });
-    logInitFilter.watch(function (err, res) {
-      console.log("LogInit", res.args);
-      alice = res.args.alice;
-      bob = res.args.bob;
-      carol = res.args.carol;
+    // -------------- -------------- -------------- -------------- --------------
 
-      refreshPartiesBalances();
-    });
+    function watchLogs() {
+      var logInitFilter = splitter.LogInit({}, { fromBlock: 0 });
+      logInitFilter.watch(function (err, res) {
+        console.log("LogInit", res.args);
+        refreshPartiesBalances();
+      });
 
-    var logSplitFilter = splitter.LogSplit({}, { fromBlock: 0 });
-    logSplitFilter.watch(function (err, res) {
-      console.log("LogSplit", res);
-      refreshPartiesBalances();
-    });
+      var logSplitFilter = splitter.LogSplit({}, { fromBlock: 0 });
+      logSplitFilter.watch(function (err, res) {
+        console.log("LogSplit", res.args);
+        refreshPartiesBalances();
+      });
 
-    var logWithdrawFilter = splitter.LogWithdraw({}, { fromBlock: 0 });
-    logWithdrawFilter.watch(function (err, res) {
-      console.log("LogWithdraw", res);
-      refreshPartiesBalances();
-    });
+      var logWithdrawFilter = splitter.LogWithdraw({}, { fromBlock: 0 });
+      logWithdrawFilter.watch(function (err, res) {
+        console.log("LogWithdraw", res.args);
+        refreshPartiesBalances();
+      });
 
-    // watch kill events and deactivate splitAlice button
-    var logKillFilter = splitter.LogKill({}, { fromBlock: 0 });
-    logKillFilter.watch(function (err, res) {
-      console.log("LogKill", res);
-      document.getElementById("splitAliceButton").disabled = true;
-    });
+      // watch kill events and deactivate splitAlice button
+      var logKillFilter = splitter.LogKill({}, { fromBlock: 0 });
+      logKillFilter.watch(function (err, res) {
+        console.log("LogKill", res.args);
+        document.getElementById("splitAliceButton").disabled = true;
+      });
+    };
   },
 
+  // -------------- -------------- -------------- -------------- --------------
+
   setStatus: function (message) {
+    console.log("Status:", message);
     var status = document.getElementById("status");
     status.innerHTML = message;
   },
 
-  // refreshBalance: function() {
-  //   var self = this;
-
-  //   var meta;
-  //   MetaCoin.deployed().then(function(instance) {
-  //     meta = instance;
-  //     return meta.getBalance.call(account, {from: account});
-  //   }).then(function(value) {
-  //     var balance_element = document.getElementById("balance");
-  //     balance_element.innerHTML = value.valueOf();
-  //   }).catch(function(e) {
-  //     console.log(e);
-  //     self.setStatus("Error getting balance; see log.");
-  //   });
-  // },
-
-  killSplitter: async function () {
+  kill: async function () {
     console.log("kill: sending");
-    splitter.kill({ from: alice }).then(res => {
+    splitter.kill({ from: aliceAddress }).then(res => {
       console.log("kill: mined");
     }).catch(err => {
       console.log("kill: failed", err);
     });
   },
 
-  splitAlice: async function () {
+  withdraw: async function (accountIndex) {
     var self = this;
 
-    // initialize Splitter contract
-    var splitter = await Splitter.deployed();
-    var aliceAddress = await splitter.alice.call();
+    var acc = web3.eth.accounts[accountIndex];
+    self.setStatus(`Sending withdraw(${acc}) ...`);
+    splitter.withdraw({ from: acc }).then(res => {
+      self.setStatus(`withdraw(${acc}) mined`);
+    }).catch(err => {
+      self.setStatus(`withdraw(${acc}) failed: ${err}`);
+    });
+  },
 
-    var amount = web3.toWei(parseInt(document.getElementById("amount").value), 'ether');
+  split: async function () {
+    var self = this;
 
-    this.setStatus(`Initiating transaction to transfer ${amount}... (please wait)`);
-    splitter.sendTransaction({ from: aliceAddress, to: splitter.contract.address, value: amount })
+    var amount = web3.toWei(parseFloat(document.getElementById("amount").value), 'ether');
+    var party0 = document.getElementById("party0_address").value;
+    var party1 = document.getElementById("party1_address").value;
+    var party2 = document.getElementById("party2_address").value;
+
+    this.setStatus(`Calling split(${party1}, ${party2}, {from: ${party0}, amount: ${amount} ... (please wait)`);
+    splitter.split(party1, party2, { from: party0, value: amount })
       .then(function () {
         self.setStatus("Transaction complete!");
         // self.refreshBalance();
