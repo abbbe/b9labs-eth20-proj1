@@ -16,6 +16,23 @@ window.App = {
   start: async function () {
     var self = this;
 
+    // display network id
+    web3.version.getNetwork(function (err, networkId) {
+      document.getElementById("network_id").innerHTML = networkId;
+    });
+
+    // Additionally you can start watching right away, by passing a callback:
+    web3.eth.filter("latest", function (error, blockHash) {
+      if (error) {
+        document.getElementById("last_block").innerHTML = "#ERROR";
+      } else {
+        document.getElementById("last_block").innerHTML = blockHash;
+        web3.eth.getBlock(blockHash, function (error, block) {
+          document.getElementById("last_block").innerHTML = "#" + block.number;
+        });
+      }
+    });
+
     Splitter.setProvider(web3.currentProvider);
 
     Splitter.deployed().then(instance => {
@@ -37,7 +54,7 @@ window.App = {
 
     function updateParty(partyIndex, address) {
       if (address == null) return;
-      
+
       var party = "party" + partyIndex;
       var addressElement = document.getElementById(party + "_address");
       addressElement.innerHTML = address;
@@ -70,7 +87,7 @@ window.App = {
 
       if (!known) {
         parties.push(addr);
-        updateParty(parties.length-1, addr);
+        updateParty(parties.length - 1, addr);
       }
     }
 
@@ -122,9 +139,9 @@ window.App = {
     self.setStatus(`Sending ${txMsg} ...`);
     splitter.kill({ from: owner }).then(res => {
       self.setStatus(`${txMsg} mined`);
-    }).catch(err => 
+    }).catch(err =>
       self.setStatus(`${txMsg} failed: ${err}`)
-    );
+      );
   },
 
   withdraw: async function (partyIndex) {
@@ -136,9 +153,9 @@ window.App = {
     self.setStatus(`Sending ${txMsg} ...`);
     splitter.withdraw({ from: acc }).then(res => {
       self.setStatus(`${txMsg} mined`);
-    }).catch(err => 
+    }).catch(err =>
       self.setStatus(`${txMsg} failed: ${err}`)
-    );
+      );
   },
 
   split: async function () {
