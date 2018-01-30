@@ -3,6 +3,8 @@ Promise.promisifyAll(web3.eth, { suffix: "Promise" });
 
 web3.eth.getTransactionReceiptMined = require("./getTransactionReceiptMined.js");
 
+const TEST_AMOUNT = 1000000;
+
 var Splitter = artifacts.require("./Splitter.sol");
 
 contract('Splitter', function (accounts) {
@@ -41,15 +43,11 @@ contract('Splitter', function (accounts) {
     }).catch(done);
   });
 
-  it("funds sent by Alice to fallback should be claimable by Bob and Carol", function () {
+  it("Alice should be able to split", function () {
     // calculate expected amounts to be debited and credited
-    var amount = 1000000;
-    var halfAmount1 = Math.floor(amount / 2);
-    var halfAmount2 = amount - halfAmount1;
+    var amount = TEST_AMOUNT;
 
-    // send some amount to Splitter on behalf of Alice
     var balancesBefore, txHash, tx, txCost;
-    var txBobInfo, txCostBob, txCarolInfo;
     return getBalances().then(_balancesBefore => {
       balancesBefore = _balancesBefore;
       return splitter.split.sendTransaction(bob, carol, { from: alice, to: splitter.address, value: amount });
@@ -63,7 +61,17 @@ contract('Splitter', function (accounts) {
       // got receipt for the transaction - make sure funds are with splitter
       txCost = txReceipt.gasUsed * tx.gasPrice;
       return assertBalancesDiffEqual(balancesBefore, [amount, -txCost - amount, 0, 0, 0, 0]);
-    }).then(() => {
+    });
+  });
+
+  it("funds split by Alice should be claimable by Bob and Carol", function () {
+    var halfAmount1 = Math.floor(TEST_AMOUNT / 2);
+    var halfAmount2 = TEST_AMOUNT - halfAmount1;
+
+    var balancesBefore, txBobInfo, txCostBob, txCarolInfo;
+
+    return getBalances().then(_balancesBefore => {
+      balancesBefore = _balancesBefore;
       // claim as bob
       return splitter.withdraw({ from: bob });
     }).then(_txBobInfo => {
@@ -78,7 +86,7 @@ contract('Splitter', function (accounts) {
       return web3.eth.getTransactionPromise(txCarolInfo.tx);
     }).then(txCarol => {
       var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
-      return assertBalancesDiffEqual(balancesBefore, [0, -txCost - amount, halfAmount1 - txCostBob, halfAmount2 - txCostCarol, 0, 0]);
+      return assertBalancesDiffEqual(balancesBefore, [-TEST_AMOUNT, 0, halfAmount1 - txCostBob, halfAmount2 - txCostCarol, 0, 0]);
     });
   });
 
@@ -89,7 +97,7 @@ contract('Splitter', function (accounts) {
   };
 
   it("transfers to fallback should fail, even from Alice", function (done) {
-    var amount = 1000000;
+    var amount = TEST_AMOUNT;
 
     // send some amount to Splitter on behalf of Alice
     web3.eth.sendTransactionPromise({ from: alice, to: splitter.address, value: amount })
@@ -107,7 +115,7 @@ contract('Splitter', function (accounts) {
 
   it("funds sent by Dave to split(emma, carol) should be claimable by Emma and Carol, events should fire", function () {
     // calculate expected amounts to be debited and credited
-    var amount = 1000000;
+    var amount = TEST_AMOUNT;
     var halfAmount1 = Math.floor(amount / 2);
     var halfAmount2 = amount - halfAmount1;
 
