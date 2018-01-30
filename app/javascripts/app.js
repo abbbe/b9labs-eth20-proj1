@@ -14,7 +14,8 @@ var splitter, owner;
 
 window.App = {
   start: async function () {
-    // Bootstrap the Splitter abstraction for Use.
+    var self = this;
+
     Splitter.setProvider(web3.currentProvider);
 
     Splitter.deployed().then(instance => {
@@ -27,11 +28,15 @@ window.App = {
 
       refreshPartiesBalances();
       watchLogs();
+
+      self.setStatus('started');
     });
 
     // -------------- -------------- -------------- -------------- --------------
 
     function _showPartyBalance(party, address) {
+      if (address == null) return;
+      
       var addressElement = document.getElementById(party + "_address");
       addressElement.innerHTML = address;
 
@@ -80,11 +85,11 @@ window.App = {
         refreshPartiesBalances();
       });
 
-      // watch kill events and deactivate splitAlice button
+      // watch kill events and deactivate Split button
       var logKillFilter = splitter.LogKill({}, { fromBlock: 0 });
       logKillFilter.watch(function (err, res) {
         console.log("LogKill", res.args);
-        document.getElementById("splitAliceButton").disabled = true;
+        document.getElementById("splitButton").disabled = true;
       });
     };
   },
@@ -98,24 +103,30 @@ window.App = {
   },
 
   kill: async function () {
-    console.log("kill: sending");
-    splitter.kill({ from: aliceAddress }).then(res => {
-      console.log("kill: mined");
-    }).catch(err => {
-      console.log("kill: failed", err);
-    });
+    var self = this;
+
+    var txMsg = `kill()`;
+
+    self.setStatus(`Sending ${txMsg} ...`);
+    splitter.kill({ from: owner }).then(res => {
+      self.setStatus(`${txMsg} mined`);
+    }).catch(err => 
+      self.setStatus(`${txMsg} failed: ${err}`)
+    );
   },
 
   withdraw: async function (accountIndex) {
     var self = this;
 
     var acc = web3.eth.accounts[accountIndex];
-    self.setStatus(`Sending withdraw(${acc}) ...`);
+    var txMsg = `withdraw(${acc})`;
+
+    self.setStatus(`Sending ${txMsg} ...`);
     splitter.withdraw({ from: acc }).then(res => {
-      self.setStatus(`withdraw(${acc}) mined`);
-    }).catch(err => {
-      self.setStatus(`withdraw(${acc}) failed: ${err}`);
-    });
+      self.setStatus(`${txMsg} mined`);
+    }).catch(err => 
+      self.setStatus(`${txMsg} failed: ${err}`)
+    );
   },
 
   split: async function () {
@@ -125,16 +136,15 @@ window.App = {
     var party0 = document.getElementById("party0_address").value;
     var party1 = document.getElementById("party1_address").value;
     var party2 = document.getElementById("party2_address").value;
+    var txMsg = `split(${party1}, ${party2}, {from: ${party0}, amount: ${amount})`;
 
-    this.setStatus(`Calling split(${party1}, ${party2}, {from: ${party0}, amount: ${amount} ... (please wait)`);
+    this.setStatus(`Calling ${txMsg} ...`);
     splitter.split(party1, party2, { from: party0, value: amount })
       .then(function () {
-        self.setStatus("Transaction complete!");
-        // self.refreshBalance();
-      }).catch(function (e) {
-        console.log(e);
-        self.setStatus("Error sending coin; see log.");
-      });
+        self.setStatus(`${txMsg} mined`);
+      }).catch(err =>
+        self.setStatus(`${txMsg} failed: ${err}`)
+      );
   }
 };
 
