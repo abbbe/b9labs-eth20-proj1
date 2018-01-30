@@ -25,7 +25,7 @@ contract Splitter {
     bob = _bob;
     carol = _carol;
 
-    LogInit(alice, bob, carol);
+    LogInit(msg.sender, _bob, _carol);
   }
 
   // interface for Alice and Dave
@@ -40,13 +40,8 @@ contract Splitter {
 
     LogSplit(msg.sender, party1, party2, msg.value);
 
-    if (half1 > 0) {
-      _authorizeWithdraw(party1, half1);
-    }
-
-    if (half2 > 0) {
-      _authorizeWithdraw(party2, half2);
-    }
+    _authorizeWithdraw(party1, half1);
+    _authorizeWithdraw(party2, half2);
   }
   
   function _authorizeWithdraw(address party, uint256 amount) private {
@@ -58,11 +53,10 @@ contract Splitter {
   // interface for Bob, Carol, Emma
   function withdraw() public {
     uint256 amount = allowances[msg.sender];
-    if (amount > 0) {
-      allowances[msg.sender] = 0;
-      LogWithdraw(msg.sender, amount);
-      msg.sender.transfer(amount);
-    }
+    require(amount > 0);
+    allowances[msg.sender] = 0;
+    LogWithdraw(msg.sender, amount);
+    msg.sender.transfer(amount);
   }
 
   function () onlyAlice public payable {
