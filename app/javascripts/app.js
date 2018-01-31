@@ -1,4 +1,5 @@
 // Import the page's CSS. Webpack will know what to do with it.
+import "../stylesheets/simple.css";
 import "../stylesheets/app.css";
 
 // Import libraries we need.
@@ -11,22 +12,45 @@ import splitter_artifacts from '../../build/contracts/Splitter.json'
 // MetaCoin is our usable abstraction, which we'll use through the code below.
 var Splitter = contract(splitter_artifacts);
 var splitter, owner;
+var parties = Array(); // array of addresses of involved parties
 
 window.App = {
   start: async function () {
     var self = this;
 
+    // display network_id
+    web3.version.getNetwork(function (err, networkId) {
+      document.getElementById("network_id").innerHTML = networkId;
+    });
+
+    // watch blocks and jupdate last_block number
+    web3.eth.filter("latest", function (error, blockHash) {
+      if (error) {
+        document.getElementById("last_block").innerHTML = "#ERROR";
+      } else {
+        web3.eth.getBlock(blockHash, function (error, block) {
+          document.getElementById("last_block").innerHTML = "#" + block.number;
+        });
+      }
+    });
+
     Splitter.setProvider(web3.currentProvider);
 
     Splitter.deployed().then(instance => {
+      // found deployed contract
       splitter = instance;
       document.getElementById("splitter_address").innerHTML = splitter.contract.address;
+
+      // prefill list of parties with web3.eth.accounts
+      web3.eth.getAccounts(function (error, accounts) {
+        accounts.forEach(acc => addParty(acc));
+      });
+
       return splitter.alice();
     }).then(_owner => {
       owner = _owner;
       document.getElementById("owner_address").innerHTML = owner;
 
-      refreshPartiesBalances();
       watchLogs();
 
       self.setStatus('started');
@@ -34,9 +58,10 @@ window.App = {
 
     // -------------- -------------- -------------- -------------- --------------
 
-    function _showPartyBalance(party, address) {
-      if (address == null) return;
-      
+    function updateParty(partyIndex, address) {
+      if (!address) return;
+
+      var party = "party" + partyIndex;
       var addressElement = document.getElementById(party + "_address");
       addressElement.innerHTML = address;
 
@@ -56,12 +81,20 @@ window.App = {
       });
     }
 
-    function refreshPartiesBalances() {
-      _showPartyBalance('alice', web3.eth.accounts[1]);
-      _showPartyBalance('bob', web3.eth.accounts[2]);
-      _showPartyBalance('carol', web3.eth.accounts[3]);
-      _showPartyBalance('dave', web3.eth.accounts[4]);
-      _showPartyBalance('emma', web3.eth.accounts[5]);
+    function addParty(addr) {
+      var known = false;
+
+      parties.forEach((p, i) => {
+        if (p == addr) {
+          updateParty(i, addr);
+          known = true;
+        }
+      });
+
+      if (!known) {
+        parties.push(addr);
+        updateParty(parties.length - 1, addr);
+      }
     }
 
     // -------------- -------------- -------------- -------------- --------------
@@ -70,19 +103,21 @@ window.App = {
       var logInitFilter = splitter.LogInit({}, { fromBlock: 0 });
       logInitFilter.watch(function (err, res) {
         console.log("LogInit", res.args);
-        refreshPartiesBalances();
+        addParty(res.args.alice);
       });
 
       var logSplitFilter = splitter.LogSplit({}, { fromBlock: 0 });
       logSplitFilter.watch(function (err, res) {
         console.log("LogSplit", res.args);
-        refreshPartiesBalances();
+        addParty(res.args.party0);
+        addParty(res.args.party1);
+        addParty(res.args.party2);
       });
 
       var logWithdrawFilter = splitter.LogWithdraw({}, { fromBlock: 0 });
       logWithdrawFilter.watch(function (err, res) {
         console.log("LogWithdraw", res.args);
-        refreshPartiesBalances();
+        addParty(res.args.party);
       });
 
       // watch kill events and deactivate Split button
@@ -110,32 +145,32 @@ window.App = {
     self.setStatus(`Sending ${txMsg} ...`);
     splitter.kill({ from: owner }).then(res => {
       self.setStatus(`${txMsg} mined`);
-    }).catch(err => 
+    }).catch(err =>
       self.setStatus(`${txMsg} failed: ${err}`)
-    );
+      );
   },
 
-  withdraw: async function (accountIndex) {
+  withdraw: async function (partyIndex) {
     var self = this;
 
-    var acc = web3.eth.accounts[accountIndex];
+    var acc = parties[partyIndex];
     var txMsg = `withdraw(${acc})`;
 
     self.setStatus(`Sending ${txMsg} ...`);
     splitter.withdraw({ from: acc }).then(res => {
       self.setStatus(`${txMsg} mined`);
-    }).catch(err => 
+    }).catch(err =>
       self.setStatus(`${txMsg} failed: ${err}`)
-    );
+      );
   },
 
   split: async function () {
     var self = this;
 
-    var amount = web3.toWei(parseFloat(document.getElementById("amount").value), 'ether');
-    var party0 = document.getElementById("party0_address").value;
-    var party1 = document.getElementById("party1_address").value;
-    var party2 = document.getElementById("party2_address").value;
+    var amount = web3.toWei(parseFloat(document.getElementById("split_amount").value), 'ether');
+    var party0 = document.getElementById("split_party0_address").value;
+    var party1 = document.getElementById("split_party1_address").value;
+    var party2 = document.getElementById("split_party2_address").value;
     var txMsg = `split(${party1}, ${party2}, {from: ${party0}, amount: ${amount})`;
 
     this.setStatus(`Calling ${txMsg} ...`);
@@ -155,7 +190,7 @@ window.addEventListener('load', function () {
     // Use Mist/MetaMask's provider
     window.web3 = new Web3(web3.currentProvider);
   } else {
-    console.warn("No web3 detected. Falling back to http://127.0.0.1:7545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
+    console.warn("No web3 detected. Falling back to http://127.0.0.1:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
     window.web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
   }
