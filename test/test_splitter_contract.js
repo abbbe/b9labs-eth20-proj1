@@ -33,7 +33,7 @@ contract('Splitter', function (accounts) {
   function assertBalancesDiffEqual(balancesBefore, expectedDiffNumbers) {
     return getBalances().then(balancesAfter => {
       var actualDiffStr = balancesBefore.map((_, i) => balancesAfter[i].minus(balancesBefore[i]).toString(10));
-      var expectedDiffStr = expectedDiffNumbers.map(n => n.toString());
+      var expectedDiffStr = expectedDiffNumbers.map(n => n.toString(10));
       assert.deepEqual(actualDiffStr, expectedDiffStr);
     });
   }
@@ -70,7 +70,7 @@ contract('Splitter', function (accounts) {
         assert.equal(txObj.logs[0].args.party0, alice);
         assert.equal(txObj.logs[0].args.party1, bob);
         assert.equal(txObj.logs[0].args.party2, carol);
-        assert.equal(txObj.logs[0].args.amount, amount);
+        assert.strictEqual(txObj.logs[0].args.amount.toString(10), amount.toString(10));
         // make sure all funds are accounted for
         return web3.eth.getTransactionPromise(txObj.tx);
       }).then(tx => {
@@ -141,7 +141,7 @@ contract('Splitter', function (accounts) {
         assert.equal(txDaveInfo.logs[0].args.party0, dave);
         assert.equal(txDaveInfo.logs[0].args.party1, emma);
         assert.equal(txDaveInfo.logs[0].args.party2, carol);
-        assert.equal(txDaveInfo.logs[0].args.amount.toString(10), amount.toString(10));
+        assert.strictEqual(txDaveInfo.logs[0].args.amount.toString(10), amount.toString(10));
         return web3.eth.getTransactionPromise(txDaveInfo.tx);
       }).then(txDave => {
         txDaveCost = txDaveInfo.receipt.gasUsed * txDave.gasPrice;
@@ -154,7 +154,7 @@ contract('Splitter', function (accounts) {
         assert.equal(txEmmaInfo.logs.length, 1);
         assert.equal(txEmmaInfo.logs[0].event, 'LogWithdraw');
         assert.equal(txEmmaInfo.logs[0].args.party, emma);
-        assert.equal(txEmmaInfo.logs[0].args.amount.toString(10), halfAmount1.toString(10));
+        assert.strictEqual(txEmmaInfo.logs[0].args.amount.toString(10), halfAmount1.toString(10));
         return web3.eth.getTransactionPromise(txEmmaInfo.tx);
       }).then(txEmma => {
         txEmmaCost = txEmmaInfo.receipt.gasUsed * txEmma.gasPrice;
@@ -165,7 +165,7 @@ contract('Splitter', function (accounts) {
         assert.equal(txCarolInfo.logs.length, 1);
         assert.equal(txCarolInfo.logs[0].event, 'LogWithdraw');
         assert.equal(txCarolInfo.logs[0].args.party, carol);
-        assert.equal(txCarolInfo.logs[0].args.amount.toString(10), halfAmount2.toString(10));
+        assert.strictEqual(txCarolInfo.logs[0].args.amount.toString(10), halfAmount2.toString(10));
         return web3.eth.getTransactionPromise(txCarolInfo.tx);
       }).then(txCarol => {
         var txCostCarol = txCarolInfo.receipt.gasUsed * txCarol.gasPrice;
