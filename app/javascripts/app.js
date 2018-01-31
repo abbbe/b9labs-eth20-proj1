@@ -34,16 +34,18 @@ window.App = {
       }
     });
 
-    // prefill list of known parties with accounts known to the provider
-    web3.eth.getAccounts(function(error, accounts) {
-      accounts.forEach(acc => addParty(acc));
-    });
-
     Splitter.setProvider(web3.currentProvider);
 
     Splitter.deployed().then(instance => {
+      // found deployed contract
       splitter = instance;
       document.getElementById("splitter_address").innerHTML = splitter.contract.address;
+
+      // prefill list of parties with web3.eth.accounts
+      web3.eth.getAccounts(function (error, accounts) {
+        accounts.forEach(acc => addParty(acc));
+      });
+
       return splitter.alice();
     }).then(_owner => {
       owner = _owner;
@@ -57,7 +59,7 @@ window.App = {
     // -------------- -------------- -------------- -------------- --------------
 
     function updateParty(partyIndex, address) {
-      if (address == null) return;
+      if (!address) return;
 
       var party = "party" + partyIndex;
       var addressElement = document.getElementById(party + "_address");

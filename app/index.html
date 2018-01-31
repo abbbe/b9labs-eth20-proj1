@@ -10,44 +10,50 @@
   
   <hr/>
 
-  <div>Network: <span id="network_id"></span></div>
+  <div>Network ID: <span id="network_id"></span></div>
   <div>Last block: <span id="last_block"></span></div>
-  <div>Contract: <span id="splitter_address"/></div>
-  <div>Owner: <span id="owner_address"/></div>
+  <div>Contract address: <span id="splitter_address"/></div>
+  <div>Contract owner: <span id="owner_address"/></div>
 
   <hr/>
 
-  <table cellspacing='0'>
+  <p>This table is populated from Web3 accounts and addresses found in events, in reverse-chronological order. Copy-paste addresses info the form in the next section.
+    It does not grow automatically and can only accomodate 6 rows, sorry.</p>
+
+  <table cellspacing='0' width='100%'>
    <thead>
-    <tr><th>Party</th> <th>Address</th> <th>Balance</th> <th>Allowance</th> <th></th> </tr>
+    <tr><th>Address</th> <th>Balance</th> <th>Allowance</th> <th></th> </tr>
    </thead>
    <tbody>
-    <tr><td>0</td> <td><span id="party0_address"/> <td><span id="party0_balance"/></td> <td><span id="party0_allowance"/></td> <td><button onclick="App.withdraw(0)">Withdraw</button></td></tr>
-    <tr><td>1</td> <td><span id="party1_address"/> <td><span id="party1_balance"/></td> <td><span id="party1_allowance"/></td> <td><button onclick="App.withdraw(1)">Withdraw</button></td></tr>
-    <tr><td>2</td> <td><span id="party2_address"/> <td><span id="party2_balance"/></td> <td><span id="party2_allowance"/></td> <td><button onclick="App.withdraw(2)">Withdraw</button></td></tr>
-    <tr><td>3</td> <td><span id="party3_address"/> <td><span id="party3_balance"/></td> <td><span id="party3_allowance"/></td> <td><button onclick="App.withdraw(3)">Withdraw</button></td></tr>
-    <tr><td>4</td> <td><span id="party4_address"/> <td><span id="party4_balance"/></td> <td><span id="party4_allowance"/></td> <td><button onclick="App.withdraw(4)">Withdraw</button></td></tr>
+    <tr><td><span id="party0_address"/> <td><span id="party0_balance"/></td> <td><span id="party0_allowance"/></td> <td><button onclick="App.withdraw(0)">Withdraw</button></td></tr>
+    <tr><td><span id="party1_address"/> <td><span id="party1_balance"/></td> <td><span id="party1_allowance"/></td> <td><button onclick="App.withdraw(1)">Withdraw</button></td></tr>
+    <tr><td><span id="party2_address"/> <td><span id="party2_balance"/></td> <td><span id="party2_allowance"/></td> <td><button onclick="App.withdraw(2)">Withdraw</button></td></tr>
+    <tr><td><span id="party3_address"/> <td><span id="party3_balance"/></td> <td><span id="party3_allowance"/></td> <td><button onclick="App.withdraw(3)">Withdraw</button></td></tr>
+    <tr><td><span id="party4_address"/> <td><span id="party4_balance"/></td> <td><span id="party4_allowance"/></td> <td><button onclick="App.withdraw(4)">Withdraw</button></td></tr>
+    <tr><td><span id="party5_address"/> <td><span id="party5_balance"/></td> <td><span id="party5_allowance"/></td> <td><button onclick="App.withdraw(5)">Withdraw</button></td></tr>
    </tbody>
   </table>
 
   <hr/>
 
-  <table cellspacing='0'>
+  <p>This table contians parameters for calling split(). Specified amount will be taken from party0 and split (made available for withdraw) between party1 and party2.</p>
+  
+  <table cellspacing='0' width='100%'>
    <thead>
     <tr><th>Party</th> <th>Address</th></tr>     
    </thead>
    <tbody>
-    <tr><td>Party0</td> <td><input type=text id="split_party0_address"/></tr>
-    <tr><td>Party1</td> <td><input type=text id="split_party1_address"/></tr>
-    <tr><td>Party2</td> <td><input type=text id="split_party2_address"/></tr>
-    </tbody>      
+    <tr><td>party0</td> <td><input type=text id="split_party0_address"/></td></tr>
+    <tr><td>party1</td> <td><input type=text id="split_party1_address"/></td></tr>
+    <tr><td>party2</td> <td><input type=text id="split_party2_address"/></td></tr>
+    <tr><td>amount</td> <td><input type="text" id="split_amount"/></td></tr>
+    <tr><td colspan=2><button id="splitButton" onclick="App.split()">Call split()</button></td></tr>
+   </tbody>      
   </table>
-  
-  <label for="amount">Amount:</label> <input type="text" id="split_amount" placeholder="e.g., 95"></input>
-  <button id="splitButton" onclick="App.split()">Split</button>
   
   <hr/>
 
+  <p>If you are contract owner, you can use this button to trigger selfdestruction of the smartcontract.</p>
   <button id="killButton" onclick="App.kill()">Kill</button>
 
   <hr/>
