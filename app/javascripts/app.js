@@ -11,6 +11,7 @@ import splitter_artifacts from '../../build/contracts/Splitter.json'
 // MetaCoin is our usable abstraction, which we'll use through the code below.
 var Splitter = contract(splitter_artifacts);
 var splitter, owner;
+var parties = Array(); // array of addresses of involved parties
 
 window.App = {
   start: async function () {
@@ -49,8 +50,6 @@ window.App = {
     });
 
     // -------------- -------------- -------------- -------------- --------------
-
-    var parties = Array(); // array of addresses of involved parties
 
     function updateParty(partyIndex, address) {
       if (address == null) return;
