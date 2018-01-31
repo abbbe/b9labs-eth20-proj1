@@ -17,21 +17,25 @@ window.App = {
   start: async function () {
     var self = this;
 
-    // display network id
+    // display network_id
     web3.version.getNetwork(function (err, networkId) {
       document.getElementById("network_id").innerHTML = networkId;
     });
 
-    // Additionally you can start watching right away, by passing a callback:
+    // watch blocks and jupdate last_block number
     web3.eth.filter("latest", function (error, blockHash) {
       if (error) {
         document.getElementById("last_block").innerHTML = "#ERROR";
       } else {
-        document.getElementById("last_block").innerHTML = blockHash;
         web3.eth.getBlock(blockHash, function (error, block) {
           document.getElementById("last_block").innerHTML = "#" + block.number;
         });
       }
+    });
+
+    // prefill list of known parties with accounts known to the provider
+    web3.eth.getAccounts(function(error, accounts) {
+      accounts.forEach(acc => addParty(acc));
     });
 
     Splitter.setProvider(web3.currentProvider);
