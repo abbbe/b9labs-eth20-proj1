@@ -1,4 +1,5 @@
 // Import the page's CSS. Webpack will know what to do with it.
+import "../stylesheets/simple.css";
 import "../stylesheets/app.css";
 
 // Import libraries we need.

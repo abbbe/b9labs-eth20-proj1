@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>B9Labs ETH20 Project 1</title>
-  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <!-- link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" -->
   <script src="./app.js"></script>
 </head>
 <body>
@@ -17,21 +17,30 @@
 
   <hr/>
 
-  <table border=1>
+  <table cellspacing='0'>
+   <thead>
     <tr><th>Party</th> <th>Address</th> <th>Balance</th> <th>Allowance</th> <th></th> </tr>
+   </thead>
+   <tbody>
     <tr><td>0</td> <td><span id="party0_address"/> <td><span id="party0_balance"/></td> <td><span id="party0_allowance"/></td> <td><button onclick="App.withdraw(0)">Withdraw</button></td></tr>
     <tr><td>1</td> <td><span id="party1_address"/> <td><span id="party1_balance"/></td> <td><span id="party1_allowance"/></td> <td><button onclick="App.withdraw(1)">Withdraw</button></td></tr>
     <tr><td>2</td> <td><span id="party2_address"/> <td><span id="party2_balance"/></td> <td><span id="party2_allowance"/></td> <td><button onclick="App.withdraw(2)">Withdraw</button></td></tr>
     <tr><td>3</td> <td><span id="party3_address"/> <td><span id="party3_balance"/></td> <td><span id="party3_allowance"/></td> <td><button onclick="App.withdraw(3)">Withdraw</button></td></tr>
     <tr><td>4</td> <td><span id="party4_address"/> <td><span id="party4_balance"/></td> <td><span id="party4_allowance"/></td> <td><button onclick="App.withdraw(4)">Withdraw</button></td></tr>
+   </tbody>
   </table>
 
   <hr/>
 
-  <table border=1>
+  <table cellspacing='0'>
+   <thead>
+    <tr><th>Party</th> <th>Address</th></tr>     
+   </thead>
+   <tbody>
     <tr><td>Party0</td> <td><input type=text id="split_party0_address"/></tr>
     <tr><td>Party1</td> <td><input type=text id="split_party1_address"/></tr>
     <tr><td>Party2</td> <td><input type=text id="split_party2_address"/></tr>
+    </tbody>      
   </table>
   
   <label for="amount">Amount:</label> <input type="text" id="split_amount" placeholder="e.g., 95"></input>
